@@ -34,8 +34,6 @@
 #include <climits>  // for INT_MIN and INT_MAX
 #include <string>
 
-#include <QApplication>  // NOLINT: cpplint is unable to handle the include order here
-#include <QPalette>  // NOLINT: cpplint is unable to handle the include order here
 #include <QLineEdit>  // NOLINT: cpplint is unable to handle the include order here
 #include <QSpinBox>  // NOLINT: cpplint is unable to handle the include order here
 
@@ -99,7 +97,7 @@ Property::~Property()
   // Destroy my children.
   for (int i = children_.size() - 1; i >= 0; i--) {
     Property * child = children_.takeAt(i);
-    child->setParent(nullptr);
+    child->setParent(NULL);
     delete child;
   }
 }
@@ -120,7 +118,7 @@ void Property::removeChildren(int start_index, int count)
   // Destroy my children.
   for (int i = start_index; i < start_index + count; i++) {
     Property * child = children_.at(i);
-    child->setParent(nullptr);   // prevent child destructor from calling getParent()->takeChild().
+    child->setParent(NULL);   // prevent child destructor from calling getParent()->takeChild().
     delete child;
   }
   children_.erase(children_.begin() + start_index, children_.begin() + start_index + count);
@@ -201,7 +199,7 @@ Property * Property::subProp(const QString & sub_name)
   // Print a useful error message showing the whole ancestry of this
   // property, but don't crash.
   QString ancestry = "";
-  for (Property * prop = this; prop != nullptr; prop = prop->getParent() ) {
+  for (Property * prop = this; prop != NULL; prop = prop->getParent() ) {
     ancestry = "\"" + prop->getName() + "\"->" + ancestry;
   }
   printf(
@@ -222,7 +220,7 @@ Property * Property::childAt(int index) const
   if (0 <= index && index < numChildren() ) {
     return childAtUnchecked(index);
   }
-  return nullptr;
+  return NULL;
 }
 
 Property * Property::childAtUnchecked(int index) const
@@ -253,8 +251,14 @@ void Property::setParent(Property * new_parent)
 
 QVariant Property::getViewData(int column, int role) const
 {
-  if (role == Qt::ForegroundRole && parent_ && parent_->getDisableChildren()) {
-    return QApplication::palette().brush(QPalette::Disabled, QPalette::Text);
+  if (role == Qt::ForegroundRole &&
+    ( parent_ && parent_->getDisableChildren() ) )
+  {
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    return Qt::gray;
+#else
+    return QColor(Qt::gray);
+#endif
   }
 
   switch (column) {
@@ -320,7 +324,7 @@ bool Property::paint(QPainter * painter, const QStyleOptionViewItem & option) co
 bool Property::isAncestorOf(Property * possible_child) const
 {
   Property * prop = possible_child->getParent();
-  while (prop != nullptr && prop != this) {
+  while (prop != NULL && prop != this) {
     prop = prop->getParent();
   }
   return prop == this;
@@ -333,20 +337,20 @@ Property * Property::takeChild(Property * child)
       return takeChildAt(i);
     }
   }
-  return nullptr;
+  return NULL;
 }
 
 Property * Property::takeChildAt(int index)
 {
   if (index < 0 || index >= children_.size() ) {
-    return nullptr;
+    return NULL;
   }
   if (model_) {
     model_->beginRemove(this, index, 1);
   }
   Property * child = children_.takeAt(index);
-  child->setModel(nullptr);
-  child->parent_ = nullptr;
+  child->setModel(NULL);
+  child->parent_ = NULL;
   child_indexes_valid_ = false;
   if (model_) {
     model_->endRemove();

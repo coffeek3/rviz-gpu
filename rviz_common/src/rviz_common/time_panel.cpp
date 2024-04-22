@@ -27,8 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "time_panel.hpp"
-
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
@@ -41,13 +39,15 @@
 #include "rviz_common/visualization_manager.hpp"
 #include "frame_manager.hpp"
 
-#include "rviz_common/display_group.hpp"
+#include "include/rviz_common/display_group.hpp"
 
-namespace rviz_common
+#include "./time_panel.hpp"
+
+namespace rviz
 {
 
-TimePanel::TimePanel(VisualizationManager * manager, QWidget * parent)
-: Panel(parent), vis_manager_(manager)
+TimePanel::TimePanel(QWidget * parent)
+: Panel(parent)
 {
   wall_time_label_ = makeTimeLabel();
   wall_elapsed_label_ = makeTimeLabel();
@@ -121,7 +121,6 @@ void TimePanel::onInitialize()
   DisplayGroup * display_group = vis_manager_->getRootDisplayGroup();
   onDisplayAdded(display_group);
 
-  experimentalToggled(false);
   syncModeSelected(0);
   pauseToggled(false);
 }
@@ -154,20 +153,20 @@ void TimePanel::onDisplayAdded(Display * display)
   DisplayGroup * display_group = qobject_cast<DisplayGroup *>(display);
   if (display_group) {
     connect(
-      display_group, &DisplayGroup::displayAdded,
-      this, &TimePanel::onDisplayAdded);
+      display_group, SIGNAL(displayAdded(rviz::Display*)), this,
+      SLOT(onDisplayAdded(rviz::Display*)));
     connect(
-      display_group, &DisplayGroup::displayRemoved,
-      this, &TimePanel::onDisplayRemoved);
+      display_group, SIGNAL(displayRemoved(rviz::Display*)), this,
+      SLOT(onDisplayRemoved(rviz::Display*)));
 
     for (int i = 0; i < display_group->numDisplays(); i++) {
-      rviz_common::Display * display = display_group->getDisplayAt(i);
+      rviz::Display * display = display_group->getDisplayAt(i);
       onDisplayAdded(display);
     }
   } else {
     // *INDENT-OFF* - uncrustify cannot deal with commas here
-    connect(display, SIGNAL(timeSignal(rviz_common::Display *, rclcpp::Time)), this,
-      SLOT(onTimeSignal(rviz_common::Display *, rclcpp::Time)));
+    connect(display, SIGNAL(timeSignal(rviz::Display *, ros::Time)), this,
+      SLOT(onTimeSignal(rviz::Display *, ros::Time)));
     // *INDENT-ON*
   }
 }
@@ -181,7 +180,7 @@ void TimePanel::onDisplayRemoved(Display * display)
   }
 }
 
-void TimePanel::onTimeSignal(Display * display, rclcpp::Time time)
+void TimePanel::onTimeSignal(Display * display, ros::Time time)
 {
   QString name = display->getName();
   int index = sync_source_selector_->findData(QVariant( (qulonglong)display) );
@@ -247,8 +246,6 @@ void TimePanel::experimentalToggled(bool checked)
 
 void TimePanel::syncSourceSelected(int index)
 {
-  Q_UNUSED(index);
-
   // clear whatever was loaded from the config
   config_sync_source_.clear();
   vis_manager_->notifyConfigChanged();
@@ -256,9 +253,9 @@ void TimePanel::syncSourceSelected(int index)
 
 void TimePanel::syncModeSelected(int mode)
 {
-  vis_manager_->getFrameManager()->setSyncMode(FrameManager::SyncMode(mode) );
+  vis_manager_->getFrameManager()->setSyncMode( (FrameManager::SyncMode)mode);
   sync_source_selector_->setEnabled(mode != FrameManager::SyncOff);
   vis_manager_->notifyConfigChanged();
 }
 
-}  // namespace rviz_common
+}  // namespace rviz

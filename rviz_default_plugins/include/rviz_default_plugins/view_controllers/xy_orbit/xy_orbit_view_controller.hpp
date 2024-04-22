@@ -39,7 +39,7 @@
 #endif
 
 #include <OgreRay.h>
-#include <OgreVector.h>
+#include <OgreVector3.h>
 
 #ifdef __clang__
 # pragma clang diagnostic pop

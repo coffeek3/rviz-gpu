@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "failed_view_controller.hpp"
+#include "./failed_view_controller.hpp"
 
 #include <QMessageBox>
 
@@ -69,7 +69,7 @@ void FailedViewController::save(Config config) const
 
 void FailedViewController::onActivate()
 {
-  QWidget * parent = nullptr;
+  QWidget * parent = NULL;
   if (context_->getWindowManager() ) {
     parent = context_->getWindowManager()->getParentWindow();
   }

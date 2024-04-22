@@ -30,14 +30,11 @@
 
 #include "rviz_common/panel_dock_widget.hpp"
 
-#include <QApplication>
 #include <QChildEvent>
 #include <QCloseEvent>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QToolButton>
-
-#include "rviz_common/load_resource.hpp"
 
 namespace rviz_common
 {
@@ -50,13 +47,13 @@ PanelDockWidget::PanelDockWidget(const QString & name)
   QWidget * title_bar = new QWidget(this);
 
   QPalette pal(palette());
-  pal.setColor(QPalette::Window, QApplication::palette().color(QPalette::Mid));
+  pal.setColor(QPalette::Window, QColor(200, 200, 200));
   title_bar->setAutoFillBackground(true);
   title_bar->setPalette(pal);
   title_bar->setContentsMargins(0, 0, 0, 0);
 
   QToolButton * close_button = new QToolButton();
-  close_button->setIcon(rviz_common::loadPixmap("package://rviz_common/icons/close.png"));
+  close_button->setIcon(QIcon::fromTheme("window-close"));
   close_button->setIconSize(QSize(10, 10));
 
   connect(close_button, SIGNAL(clicked()), this, SLOT(close()));

@@ -103,7 +103,7 @@ bool MarkerBase::transform(
   Ogre::Quaternion & orient,
   Ogre::Vector3 & scale)
 {
-  rclcpp::Time stamp(message->header.stamp, RCL_ROS_TIME);
+  rclcpp::Time stamp = message->header.stamp;
   if (message->frame_locked) {
     stamp = rclcpp::Time(0, 0, context_->getClock()->get_clock_type());
   }
@@ -112,9 +112,8 @@ bool MarkerBase::transform(
       message->header.frame_id, stamp, message->pose, pos, orient))
   {
     std::string error;
-    rclcpp::Time message_time(message->header.stamp, RCL_ROS_TIME);
     context_->getFrameManager()->transformHasProblems(
-      message->header.frame_id, message_time, error);
+      message->header.frame_id, message->header.stamp, error);
     if (owner_) {
       owner_->setMarkerStatus(getID(), rviz_common::properties::StatusProperty::Error, error);
     }

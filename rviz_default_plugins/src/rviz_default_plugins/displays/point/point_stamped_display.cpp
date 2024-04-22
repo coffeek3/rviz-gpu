@@ -128,8 +128,11 @@ void PointStampedDisplay::processMessage(geometry_msgs::msg::PointStamped::Const
     return;
   }
 
-  rclcpp::Time time_stamp(msg->header.stamp, RCL_ROS_TIME);
-  if (!updateFrame(msg->header.frame_id, time_stamp)) {
+  Ogre::Quaternion orientation;
+  Ogre::Vector3 position;
+  if (!context_->getFrameManager()->getTransform(
+      msg->header.frame_id, msg->header.stamp, position, orientation))
+  {
     setMissingTransformToFixedFrame(msg->header.frame_id);
     return;
   }
@@ -138,6 +141,9 @@ void PointStampedDisplay::processMessage(geometry_msgs::msg::PointStamped::Const
   if (visuals_.size() >= static_cast<size_t>(history_length_property_->getInt())) {
     visuals_.pop_front();
   }
+
+  scene_node_->setPosition(position);
+  scene_node_->setOrientation(orientation);
 
   createNewSphereVisual(msg);
 }

@@ -60,25 +60,14 @@ public:
   {}
 };
 
-struct ImageData final
+struct ImageData
 {
-  ImageData(
-    Ogre::PixelFormat pixformat,
-    const uint8_t * data_ptr,
-    size_t data_size_in_bytes,
-    bool take_ownership);
+  ImageData(std::string encoding, const uint8_t * data_ptr, size_t size);
 
-  ~ImageData();
-
+  std::string encoding_;
   Ogre::PixelFormat pixel_format_;
   const uint8_t * data_ptr_;
-  size_t size_in_bytes_;
-  // Depending on the input format of the data from the ROS message, we may or may not need to do
-  // some kind of conversion.  In the case where we do *not* do a conversion, we directly use the
-  // data pointer from the sensor_msgs::msg::Image::ConstSharedPtr and don't do any allocations for
-  // performance reasons.  In the case where we *do* a conversion, we allocate memory and then this
-  // class will take ownership of the data and will be responsible for freeing it.
-  bool has_ownership_;
+  size_t size_;
 };
 
 class ROSImageTexture : public ROSImageTextureIface
@@ -97,19 +86,19 @@ public:
   void clear() override;
 
   RVIZ_DEFAULT_PLUGINS_PUBLIC
-  const Ogre::String getName() const override;
+  const Ogre::String getName() override {return texture_->getName();}
 
   RVIZ_DEFAULT_PLUGINS_PUBLIC
-  const Ogre::TexturePtr & getTexture() override;
+  const Ogre::TexturePtr & getTexture() override {return texture_;}
 
   RVIZ_DEFAULT_PLUGINS_PUBLIC
   const sensor_msgs::msg::Image::ConstSharedPtr getImage() override;
 
   RVIZ_DEFAULT_PLUGINS_PUBLIC
-  uint32_t getWidth() const override;
+  uint32_t getWidth() override {return width_;}
 
   RVIZ_DEFAULT_PLUGINS_PUBLIC
-  uint32_t getHeight() const override;
+  uint32_t getHeight() override {return height_;}
 
   // automatic range normalization
   RVIZ_DEFAULT_PLUGINS_PUBLIC
@@ -123,15 +112,20 @@ public:
 
 private:
   template<typename T>
-  void getMinimalAndMaximalValueToNormalize(
-    const T * data_ptr, size_t num_elements, T & min_value, T & max_value);
+  std::vector<uint8_t> normalize(const T * image_data, size_t image_data_size);
   template<typename T>
-  ImageData convertTo8bit(const uint8_t * data_ptr, size_t data_size_in_bytes);
-  ImageData convertYUV422ToRGBData(const uint8_t * data_ptr, size_t data_size_in_bytes);
-  ImageData convertYUV422_YUY2ToRGBData(const uint8_t * data_ptr, size_t data_size_in_bytes);
+  std::vector<uint8_t> createNewNormalizedBuffer(
+    const T * image_data, size_t image_data_size, T minValue, T maxValue) const;
+  double computeMedianOfSeveralFrames(std::deque<double> & buffer, double new_value);
+  void updateBuffer(std::deque<double> & buffer, double value) const;
+  double computeMedianOfBuffer(const std::deque<double> & buffer) const;
+  template<typename T>
+  void getMinimalAndMaximalValueToNormalize(
+    const T * image_data, size_t image_data_size, T & minValue, T & maxValue);
 
-  ImageData setFormatAndNormalizeDataIfNecessary(
-    const std::string & encoding, const uint8_t * data_ptr, size_t data_size_in_bytes);
+  bool fillWithCurrentImage(sensor_msgs::msg::Image::ConstSharedPtr & image);
+  ImageData setFormatAndNormalizeDataIfNecessary(ImageData image_data);
+  void loadImageToOgreImage(const ImageData & image_data, Ogre::Image & ogre_image) const;
 
   sensor_msgs::msg::Image::ConstSharedPtr current_image_;
   std::mutex mutex_;
@@ -142,7 +136,6 @@ private:
 
   uint32_t width_;
   uint32_t height_;
-  uint32_t stride_;
 
   // fields for float image running median computation
   bool normalize_;

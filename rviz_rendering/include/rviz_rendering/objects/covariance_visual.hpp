@@ -33,33 +33,12 @@
 
 #include <array>
 #include <memory>
+#include <sstream>  // needed for Eigen until https://gitlab.com/libeigen/eigen/-/merge_requests/65
 #include <vector>
 
-// GCC 11 has a false positive warning about uninitialized variables in Eigen.  There is an open
-// issue about it at https://gitlab.com/libeigen/eigen/-/issues/2304 .  Just disable the warning
-// for Eigen for now.
-// Also Version 3.4.0 of Eigen in Ubuntu 22.04 has a bug that causes -Wclass-memaccess warnings on
-// aarch64.  Upstream Eigen has already fixed this in
-// https://gitlab.com/libeigen/eigen/-/merge_requests/645 .  The Debian fix for this is in
-// https://salsa.debian.org/science-team/eigen3/-/merge_requests/1 .
-// However, it is not clear that that fix is going to make it into Ubuntu 22.04 before it
-// freezes, so disable the warning here.
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#pragma GCC diagnostic ignored "-Wclass-memaccess"
-#elif defined(_WIN32)
-#pragma warning(push)
-#pragma warning(disable:4996)
-#endif
-#include <Eigen/Dense>
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#elif defined(_WIN32)
-#pragma warning(pop)
-#endif
+#include <Eigen/Dense>  // NOLINT: cpplint cannot handle correct include here
 
-#include <OgreVector.h>
+#include <OgreVector3.h>
 #include <OgreColourValue.h>
 
 #include "rviz_rendering/objects/shape.hpp"

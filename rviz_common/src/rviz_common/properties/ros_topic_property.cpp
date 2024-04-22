@@ -80,7 +80,10 @@ void RosTopicProperty::fillTopicList()
   for (const auto & topic : published_topics) {
     // Only add topics whose type matches.
     for (const auto & type : topic.second) {
-      if (type == std_message_type) {
+      // TODO(Martin-Idel-SI): revisit after message_traits become available.
+      // We only want to show the types of the topic we subscribe to, however, currently we can't
+      // get the type, so std_message_type will always be empty --> show all topics instead
+      if (std_message_type.empty() || type == std_message_type) {
         addOptionStd(topic.first);
       }
     }
@@ -89,42 +92,6 @@ void RosTopicProperty::fillTopicList()
   QApplication::restoreOverrideCursor();
 }
 
-RosFilteredTopicProperty::RosFilteredTopicProperty(
-  const QString & name,
-  const QString & default_value,
-  const QString & message_type,
-  const QString & description,
-  const QRegExp & filter,
-  Property * parent,
-  const char * changed_slot,
-  QObject * receiver)
-: RosTopicProperty(name, default_value, message_type, description, parent, changed_slot, receiver)
-  , filter_(filter)
-  , filter_enabled_(true)
-{
-}
-
-void RosFilteredTopicProperty::enableFilter(bool enabled)
-{
-  filter_enabled_ = enabled;
-  fillTopicList();
-}
-
-QRegExp RosFilteredTopicProperty::filter() const
-{
-  return filter_;
-}
-
-void RosFilteredTopicProperty::fillTopicList()
-{
-  QStringList filtered_strings_;
-
-  // Obtain list of available topics
-  RosTopicProperty::fillTopicList();
-  // Apply filter
-  if (filter_enabled_) {
-    strings_ = strings_.filter(filter_);
-  }
-}
 }  // end namespace properties
+
 }  // end namespace rviz_common

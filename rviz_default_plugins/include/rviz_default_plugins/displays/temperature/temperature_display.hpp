@@ -56,7 +56,6 @@ public:
   TemperatureDisplay();
   ~TemperatureDisplay() override;
 
-protected:
   void processMessage(const sensor_msgs::msg::Temperature::ConstSharedPtr message) override;
 
 private:

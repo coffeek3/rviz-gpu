@@ -102,22 +102,17 @@ void RenderPanel::initialize(DisplayContext * context, bool use_main_scene)
   context_ = context;
 
   if (use_main_scene) {
-    Ogre::SceneManager * scene_manager = context_->getSceneManager();
-
     rviz_rendering::RenderWindowOgreAdapter::setSceneManager(
-      render_window_, scene_manager);
+      render_window_, context_->getSceneManager());
     std::string camera_name;
     static int count = 0;
     camera_name = "RenderPanelCamera" + std::to_string(count++);
-    auto default_camera = scene_manager->createCamera(camera_name);
-    default_camera->setNearClipDistance(0.01f);
+    auto default_camera_ = context_->getSceneManager()->createCamera(camera_name);
+    default_camera_->setNearClipDistance(0.01f);
+    default_camera_->setPosition(default_camera_pose_);
+    default_camera_->lookAt(Ogre::Vector3(0, 0, 0));
 
-    auto camera_node = scene_manager->getRootSceneNode()->createChildSceneNode();
-    camera_node->attachObject(default_camera);
-    camera_node->setPosition(default_camera_pose_);
-    camera_node->lookAt(Ogre::Vector3(0, 0, 0), Ogre::Node::TS_WORLD);
-    rviz_rendering::RenderWindowOgreAdapter::setSceneNodeCamera(render_window_, camera_node);
-    rviz_rendering::RenderWindowOgreAdapter::setOgreCamera(render_window_, default_camera);
+    rviz_rendering::RenderWindowOgreAdapter::setOgreCamera(render_window_, default_camera_);
   }
   // scene_manager_ = scene_manager;
   // scene_manager_->addListener(this);
@@ -336,4 +331,16 @@ void RenderPanel::contextMenuEvent(QContextMenuEvent * event)
     context_menu->exec(QCursor::pos());
   }
 }
+
+#if 0
+void RenderPanel::sceneManagerDestroyed(Ogre::SceneManager * destroyed_scene_manager)
+{
+  if (destroyed_scene_manager == scene_manager_) {
+    scene_manager_ = nullptr;
+    default_camera_ = nullptr;
+    setCamera(nullptr);
+  }
+}
+#endif
+
 }  // namespace rviz_common

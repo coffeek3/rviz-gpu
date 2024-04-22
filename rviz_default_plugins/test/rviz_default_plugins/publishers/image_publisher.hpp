@@ -32,7 +32,6 @@
 
 #include <cmath>
 #include <iostream>
-#include <string>
 #include <vector>
 
 #include "rclcpp/rclcpp.hpp"
@@ -58,10 +57,10 @@ namespace nodes
 class ImagePublisher : public rclcpp::Node
 {
 public:
-  explicit ImagePublisher(const std::string & topic_name = "image")
+  ImagePublisher()
   : Node("image_publisher")
   {
-    publisher = this->create_publisher<sensor_msgs::msg::Image>(topic_name, 10);
+    publisher = this->create_publisher<sensor_msgs::msg::Image>("image", 10);
     timer = this->create_wall_timer(100ms, std::bind(&ImagePublisher::timer_callback, this));
   }
 

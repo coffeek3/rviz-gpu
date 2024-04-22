@@ -100,7 +100,7 @@ public:
   ~SelectionRenderer() override = default;
 
   RVIZ_COMMON_PUBLIC
-  virtual void initialize(Ogre::Camera * camera);
+  virtual void initialize(Ogre::Camera * camera, Ogre::SceneManager * scene_manager);
 
   RVIZ_COMMON_PUBLIC
   virtual void render(
@@ -160,7 +160,7 @@ private:
   rviz_common::DisplayContext * context_;
 
   Ogre::Camera * camera_;
-  Ogre::SceneNode * camera_node_;
+  Ogre::SceneManager * scene_manager_;
 
   Ogre::MaterialPtr fallback_pick_material_;
   Ogre::Technique * fallback_pick_technique_;

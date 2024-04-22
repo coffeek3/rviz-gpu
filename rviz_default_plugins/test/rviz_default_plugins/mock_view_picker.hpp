@@ -38,7 +38,7 @@
 #include <string>
 #include <vector>
 
-#include <OgreVector.h>
+#include <OgreVector3.h>
 
 #include "rviz_common/interaction/forwards.hpp"
 #include "rviz_common/interaction/view_picker_iface.hpp"
@@ -67,22 +67,6 @@ public:
     for (const auto & object : view_objects) {
       if (object.x == x && object.y == y) {
         pos = object.position;
-        return true;
-      }
-    }
-    return false;
-  }
-
-  bool get3DPatch(
-    rviz_common::RenderPanel * panel, int x, int y, unsigned width, unsigned height,
-    bool skip_missing, std::vector<Ogre::Vector3> & result_points) override
-  {
-    (void) panel;
-    (void) skip_missing;
-
-    for (const auto & object : view_objects) {
-      if (object.x == x && object.y == y) {
-        result_points = std::vector<Ogre::Vector3>(width * height, object.position);
         return true;
       }
     }

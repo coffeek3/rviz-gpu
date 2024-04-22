@@ -87,7 +87,7 @@ class VisualizationManagerPrivate;
  * The "protected" members should probably all be "private", as
  * VisualizationManager is not intended to be subclassed.
  */
-class RVIZ_COMMON_PUBLIC VisualizationManager : public DisplayContext
+class VisualizationManager : public DisplayContext
 {
   Q_OBJECT
 
@@ -213,6 +213,9 @@ public:
    */
   void handleMouseEvent(const ViewportMouseEvent & event) override;
 
+  /// Resets the wall and ROS elapsed time to zero and calls resetDisplays().
+  void resetTime();
+
   /// Return a pointer to the HandlerManager
   std::shared_ptr<rviz_common::interaction::HandlerManagerIface> getHandlerManager() const override;
 
@@ -250,6 +253,13 @@ public:
   WindowManagerInterface * getWindowManager() const override;
 
   ros_integration::RosNodeAbstractionIface::WeakPtr getRosNodeAbstraction() const override;
+
+#if 0
+  /**
+   * @brief Return a CallbackQueue using a different thread than the main GUI one.
+   */
+  ros::CallbackQueueInterface * getThreadedQueue();
+#endif
 
   /// Return the FrameManager instance.
   FrameManagerIface * getFrameManager() const override;
@@ -292,14 +302,7 @@ public:
 
   rclcpp::Clock::SharedPtr getClock() override;
 
-public Q_SLOTS:
-  /// Resets the wall and ROS elapsed time to zero and calls resetDisplays().
-  void resetTime();
-
 Q_SIGNALS:
-  /// Emitted after time jump was detected.
-  void timeJumped();
-
   /// Emitted before updating all Displays.
   void preUpdate();
 
@@ -325,12 +328,11 @@ protected Q_SLOTS:
   void onToolChanged(Tool *);
 
 protected:
-  /// Called when ROS detects a time jump.
-  void onTimeJump(const rcl_time_jump_t & time_jump);
-
   void updateTime();
 
   void updateFrames();
+
+  void threadedQueueThreadFunc();
 
   /// Ogre Root.
   Ogre::Root * ogre_root_;
@@ -383,7 +385,6 @@ protected:
   OgreRenderQueueClearer * ogre_render_queue_clearer_;
 
   rclcpp::Clock::SharedPtr clock_;
-  rclcpp::JumpHandler::SharedPtr clock_jump_handler_;
 
 private Q_SLOTS:
   void updateFixedFrame();

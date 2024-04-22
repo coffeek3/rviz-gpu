@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "displays_panel.hpp"
+#include "./displays_panel.hpp"
 
 #include <string>
 
@@ -41,9 +41,9 @@
 #include <QTimer>  // NOLINT: cpplint is unable to handle the include order here
 #include <QVBoxLayout>  // NOLINT: cpplint is unable to handle the include order here
 
-#include "display_factory.hpp"
+#include "./display_factory.hpp"
 #include "rviz_common/display.hpp"
-#include "add_display_dialog.hpp"
+#include "./add_display_dialog.hpp"
 #include "rviz_common/properties/property.hpp"
 #include "rviz_common/properties/property_tree_widget.hpp"
 #include "rviz_common/properties/property_tree_with_help.hpp"
@@ -120,7 +120,7 @@ void DisplaysPanel::onNewDisplay()
   QStringList empty;
 
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-  AddDisplayDialog dialog(
+  AddDisplayDialog * dialog = new AddDisplayDialog(
     vis_manager_->getDisplayFactory(),
     empty,
     empty,
@@ -131,13 +131,16 @@ void DisplaysPanel::onNewDisplay()
     &datatype);
   QApplication::restoreOverrideCursor();
 
-  if (dialog.exec() == QDialog::Accepted) {
+  vis_manager_->stopUpdate();
+  if (dialog->exec() == QDialog::Accepted) {
     Display * disp = vis_manager_->createDisplay(lookup_name, display_name, true);
     if (!topic.isEmpty() && !datatype.isEmpty()) {
       disp->setTopic(topic, datatype);
     }
   }
+  vis_manager_->startUpdate();
   activateWindow();  // Force keyboard focus back on main window.
+  delete dialog;
 }
 
 void DisplaysPanel::onDuplicateDisplay()
@@ -176,6 +179,7 @@ void DisplaysPanel::onDuplicateDisplay()
     QItemSelection selection(first, last);
     property_grid_->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
   }
+  vis_manager_->startUpdate();
   activateWindow();  // Force keyboard focus back on main window.
 }
 

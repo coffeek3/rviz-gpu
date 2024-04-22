@@ -2,211 +2,49 @@
 Changelog for package rviz_rendering
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-14.1.0 (2024-04-16)
--------------------
-
-14.0.0 (2024-04-07)
--------------------
-
-13.4.2 (2024-03-27)
--------------------
-
-13.4.1 (2024-03-26)
--------------------
-* Added CameraInfo display (`#1166 <https://github.com/ros2/rviz/issues/1166>`_)
-* Contributors: Alejandro Hernández Cordero
-
-13.4.0 (2024-03-09)
--------------------
-* Fix camera display overlay (`#1151 <https://github.com/ros2/rviz/issues/1151>`_)
-* Fixes for uncrustify 0.78. (`#1155 <https://github.com/ros2/rviz/issues/1155>`_)
-  Mostly what we do here is to disable the indentation on
-  certain constructs that are different between 0.72 and
-  0.78.  It isn't my preferred solution, but since it only
-  affects a small amount of code (and most of that in macros),
-  this seems acceptable to me.
-* Contributors: Alejandro Hernández Cordero, Chris Lalancette
-
-13.3.1 (2024-01-24)
--------------------
-* fixed MovableText::getWorldTransforms transform (`#1118 <https://github.com/ros2/rviz/issues/1118>`_)
-* Contributors: Yaswanth
-
-13.3.0 (2023-12-26)
--------------------
-* Switch to target_link_libraries. (`#1098 <https://github.com/ros2/rviz/issues/1098>`_)
-* Update rviz_rendering and rviz_rendering_tests to C++17. (`#1096 <https://github.com/ros2/rviz/issues/1096>`_)
-* Contributors: Chris Lalancette
-
-13.2.0 (2023-11-06)
--------------------
-* Include MeshShape class (`#1064 <https://github.com/ros2/rviz/issues/1064>`_)
-* Use assimp to load stl (`#1063 <https://github.com/ros2/rviz/issues/1063>`_)
-* Contributors: Alejandro Hernández Cordero
-
-13.1.2 (2023-10-09)
--------------------
-* RVIZ_RENDERING_PUBLIC to export class RenderSystem (`#1072 <https://github.com/ros2/rviz/issues/1072>`_)
-* Restore the maybe-uninitialized flag in covariance_visual.hpp (`#1071 <https://github.com/ros2/rviz/issues/1071>`_)
-* Fix up warnings when building with clang. (`#1070 <https://github.com/ros2/rviz/issues/1070>`_)
-* Contributors: Chris Lalancette, Felix F Xu
-
-13.1.1 (2023-10-04)
--------------------
-* Use buildsystem info to get the ros_package_name (`#1062 <https://github.com/ros2/rviz/issues/1062>`_)
-* Contributors: Alejandro Hernández Cordero
-
-13.1.0 (2023-09-07)
--------------------
-* make box-mode point cloud shader lighter on top than bottom (`#1058 <https://github.com/ros2/rviz/issues/1058>`_)
-* Removed warning when building in release mode (`#1057 <https://github.com/ros2/rviz/issues/1057>`_)
-* Fixed low FPS when sending point markers (`#1049 <https://github.com/ros2/rviz/issues/1049>`_)
-* Removed unused code (`#1044 <https://github.com/ros2/rviz/issues/1044>`_)
-* Contributors: Alejandro Hernández Cordero, Morgan Quigley
-
-13.0.0 (2023-08-21)
--------------------
-* Fix the flakey rviz_rendering tests (`#1026 <https://github.com/ros2/rviz/issues/1026>`_)
-* Contributors: Chris Lalancette
-
-12.8.0 (2023-08-27)
--------------------
-* Added TwistStamped and AccelStamped default plugins (`#991 <https://github.com/ros2/rviz/issues/991>`_)
-* Contributors: Alejandro Hernández Cordero
-
-12.7.0 (2023-07-11)
--------------------
-* Added Effort plugin (`#990 <https://github.com/ros2/rviz/issues/990>`_)
-* load GLB meshes (`#1001 <https://github.com/ros2/rviz/issues/1001>`_)
-* Fixed camera default plusin crash (`#999 <https://github.com/ros2/rviz/issues/999>`_)
-* Contributors: Alejandro Hernández Cordero, Morgan Quigley
-
-12.6.1 (2023-06-12)
--------------------
-
-12.6.0 (2023-06-07)
--------------------
-
-12.5.1 (2023-05-11)
--------------------
-* Clean Code (`#975 <https://github.com/ros2/rviz/issues/975>`_)
-  * Clean Code
-* Contributors: mosfet80
-
-12.5.0 (2023-04-28)
--------------------
-
-12.4.0 (2023-04-18)
--------------------
-
-12.3.2 (2023-04-11)
--------------------
-
-12.3.1 (2023-03-01)
--------------------
-
-12.3.0 (2023-02-14)
--------------------
-* [rolling] Update maintainers - 2022-11-07 (`#923 <https://github.com/ros2/rviz/issues/923>`_)
-* Contributors: Audrow Nash
-
-12.2.0 (2022-11-07)
--------------------
-* add test to ensure binary STL files from SOLIDWORKS get imported without a warning (`#917 <https://github.com/ros2/rviz/issues/917>`_)
-* Contributors: Kenji Brameld
-
-12.1.0 (2022-11-02)
--------------------
-
-12.0.0 (2022-09-13)
--------------------
-* Ogre 1.12.10 upgrade (`#878 <https://github.com/ros2/rviz/issues/878>`_)
-* Contributors: Kenji Brameld
-
-11.3.0 (2022-04-26)
--------------------
-* Stop using glsl150 resources for now. (`#851 <https://github.com/ros2/rviz/issues/851>`_)
-* Contributors: Chris Lalancette
-
-11.2.0 (2022-04-08)
--------------------
-
-11.1.1 (2022-03-30)
--------------------
-
-11.1.0 (2022-03-24)
--------------------
-* Make getVerticesPerPoint method public and improve tests (`#843 <https://github.com/ros2/rviz/issues/843>`_)
-* Disable class-memaccess warnings for Eigen (`#838 <https://github.com/ros2/rviz/issues/838>`_)
-* Contributors: Chris Lalancette, Jorge Perez
-
-11.0.0 (2022-03-01)
--------------------
-* Disable a warning when including Eigen. (`#835 <https://github.com/ros2/rviz/issues/835>`_)
-* Contributors: Chris Lalancette
-
-10.0.0 (2022-02-16)
--------------------
-* Install headers to include/${PROJECT_NAME} (`#829 <https://github.com/ros2/rviz/issues/829>`_)
-* Contributors: Shane Loretz
-
-9.1.1 (2022-01-25)
+8.2.8 (2023-03-16)
 ------------------
-* Fix support for assimp 5.1.0 (`#817 <https://github.com/ros2/rviz/issues/817>`_)
-* Contributors: Silvio Traversaro
+* add test to ensure binary STL files from SOLIDWORKS get imported without a warning (`#917 <https://github.com/ros2/rviz/issues/917>`_) (`#933 <https://github.com/ros2/rviz/issues/933>`_)
+* Contributors: mergify[bot]
 
-9.1.0 (2022-01-13)
+8.2.7 (2022-09-12)
 ------------------
-* Fix cpplint errors (`#818 <https://github.com/ros2/rviz/issues/818>`_)
-* Contributors: Jacob Perron
+* Fix support for assimp 5.1.0 (`#826 <https://github.com/ros2/rviz/issues/826>`_)
+* Contributors: Akash
 
-9.0.1 (2021-12-17)
+8.2.6 (2022-02-04)
 ------------------
-* Fixes for uncrustify 0.72 (`#807 <https://github.com/ros2/rviz/issues/807>`_)
-* Contributors: Chris Lalancette
+* Export Qt5 dependencies properly (`#687 <https://github.com/ros2/rviz/issues/687>`_) (`#822 <https://github.com/ros2/rviz/issues/822>`_)
+* Contributors: Jacob Perron, Michel Hidalgo
 
-9.0.0 (2021-11-18)
-------------------
-* Suppress assimp warnings in rviz_rendering build (`#775 <https://github.com/ros2/rviz/issues/775>`_)
-* Fix for ogre failing when material already exists (`#729 <https://github.com/ros2/rviz/issues/729>`_)
-* Contributors: Scott K Logan, Wolf Vollprecht
-
-8.7.0 (2021-08-11)
-------------------
-* Removed some memory leaks in rviz_rendering and rviz_rendering_tests (`#710 <https://github.com/ros2/rviz/issues/710>`_)
-* Contributors: Alejandro Hernández Cordero
-
-8.6.0 (2021-05-13)
-------------------
-* Export Qt5 dependencies properly (`#687 <https://github.com/ros2/rviz/issues/687>`_)
-* Putting glsl 1.50 resources back in RenderSystem (`#668 <https://github.com/ros2/rviz/issues/668>`_)
-* Contributors: Michel Hidalgo, Piotr Jaroszek
-
-8.5.0 (2021-04-06)
+8.2.5 (2021-10-12)
 ------------------
 
-8.4.0 (2021-03-18)
+8.2.4 (2021-10-05)
 ------------------
-* reset current line width when calculating text width (`#655 <https://github.com/ros2/rviz/issues/655>`_)
-* Silence a dead store warning. (`#643 <https://github.com/ros2/rviz/issues/643>`_)
-* Fix a memory leak when using the ResourceIOSystem. (`#641 <https://github.com/ros2/rviz/issues/641>`_)
-* Contributors: Chris Lalancette, ipa-fez
+* Reset current line width when calculating text width (`#655 <https://github.com/ros2/rviz/issues/655>`_) (`#757 <https://github.com/ros2/rviz/issues/757>`_)
+* Contributors: Jacob Perron, ipa-fez
 
-8.3.1 (2021-01-25)
+8.2.3 (2021-09-01)
 ------------------
-* Revert "Support loading meshes other than .mesh and .stl with package URIs (`#610 <https://github.com/ros2/rviz/issues/610>`_)" (`#638 <https://github.com/ros2/rviz/issues/638>`_)
-* Contributors: Shane Loretz
 
-8.3.0 (2020-12-08)
+8.2.2 (2021-06-18)
 ------------------
-* Prevent rviz_rendering::AssimpLoader from loading materials twice. (`#622 <https://github.com/ros2/rviz/issues/622>`_)
-* Support loading meshes other than .mesh and .stl with package URIs (`#610 <https://github.com/ros2/rviz/issues/610>`_)
-* Add linters and use ament_lint_auto (`#608 <https://github.com/ros2/rviz/issues/608>`_)
-* Update maintainers (`#607 <https://github.com/ros2/rviz/issues/607>`_)
-* Switch to nullptr everywhere. (`#592 <https://github.com/ros2/rviz/issues/592>`_)
-* Use retriever.hpp (`#589 <https://github.com/ros2/rviz/issues/589>`_)
-* Avoid hidding base class getRenderOperation in PointCloudRenderable (`#586 <https://github.com/ros2/rviz/issues/586>`_)
-* Contributors: Chris Lalancette, Ivan Santiago Paunovic, Jacob Perron, Michel Hidalgo, Shane Loretz
+
+8.2.1 (2020-12-09)
+------------------
+* Prevent rviz_rendering::AssimpLoader from loading materials twice. (`#622 <https://github.com/ros2/rviz/issues/622>`_) (`#629 <https://github.com/ros2/rviz/issues/629>`_)
+* Update maintainer list (`#619 <https://github.com/ros2/rviz/issues/619>`_)
+* [foxy-backport] fast forward of ros2 (default) to foxy (`#570 <https://github.com/ros2/rviz/issues/570>`_)
+  * restore compatibility with older Qt versions (`#561 <https://github.com/ros2/rviz/issues/561>`_)
+  * Suppress warnings when building with older Qt versions. (`#562 <https://github.com/ros2/rviz/issues/562>`_)
+  * Don't try to moc generate env_config.hpp file. (`#550 <https://github.com/ros2/rviz/issues/550>`_)
+  This removes one more warning from rviz_common builds.
+  * rewrite hack to avoid CMake warning with assimp 5.0.1 and older, apply cross platform (`#565 <https://github.com/ros2/rviz/issues/565>`_)
+  * Use dedicated TransformListener thread (`#551 <https://github.com/ros2/rviz/issues/551>`_)
+  * restore alphabetical include order (`#563 <https://github.com/ros2/rviz/issues/563>`_)
+  * Don't install test header files in rviz_rendering. (`#564 <https://github.com/ros2/rviz/issues/564>`_)
+* Contributors: Michael Jeronimo, Michel Hidalgo, William Woodall, Dirk Thomas, Chris Lalancette, ymd-stella, Karsten Knese
 
 8.2.0 (2020-06-23)
 ------------------

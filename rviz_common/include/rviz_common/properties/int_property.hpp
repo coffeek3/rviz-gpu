@@ -68,9 +68,7 @@ public:
     const QString & description = QString(),
     Property * parent = 0,
     const char * changed_slot = 0,
-    QObject * receiver = 0,
-    int min_value = INT_MIN,
-    int max_value = INT_MAX);
+    QObject * receiver = 0);
 
   /// Set the new value for this property.
   /**

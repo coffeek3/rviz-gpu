@@ -122,12 +122,9 @@ void MaterialManager::enableAlphaBlending(
 
 void MaterialManager::createDefaultMaterials()
 {
-  auto retrieve_result = Ogre::MaterialManager::getSingleton().createOrRetrieve(
+  auto material = Ogre::MaterialManager::getSingleton().create(
     "BaseWhiteNoLighting", "rviz_rendering");
-  auto material = std::dynamic_pointer_cast<Ogre::Material>(retrieve_result.first);
-  if (material) {
-    material->setLightingEnabled(false);
-  }
+  material->setLightingEnabled(false);
 }
 
 }  // namespace rviz_rendering

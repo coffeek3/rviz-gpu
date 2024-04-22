@@ -27,8 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <QString>
-
 #include "robot_model_display_page_object.hpp"
 
 RobotModelDisplayPageObject::RobotModelDisplayPageObject()

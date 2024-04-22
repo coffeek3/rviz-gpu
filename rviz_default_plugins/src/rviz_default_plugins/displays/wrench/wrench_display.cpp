@@ -51,11 +51,6 @@ namespace displays
 
 WrenchDisplay::WrenchDisplay()
 {
-  accept_nan_values_ = new rviz_common::properties::BoolProperty(
-    "Accept NaN Values", false,
-    "NaN values in incoming messages are converted to 0 to display wrench vector.", this,
-    SLOT(updateWrenchVisuals()));
-
   force_color_property_ = new rviz_common::properties::ColorProperty(
     "Force Color", QColor(204, 51, 51), "Color to draw the force arrows.", this,
     SLOT(updateWrenchVisuals()));
@@ -132,40 +127,17 @@ bool validateFloats(const geometry_msgs::msg::WrenchStamped & msg)
 
 void WrenchDisplay::processMessage(geometry_msgs::msg::WrenchStamped::ConstSharedPtr msg)
 {
-  auto adjusted_msg = std::make_shared<geometry_msgs::msg::WrenchStamped>();
-  bool accept_nan = accept_nan_values_->getBool();
-
-  if (!accept_nan) {
-    if (!validateFloats(*msg)) {
-      setStatus(
-        rviz_common::properties::StatusProperty::Error, "Topic",
-        "Message contained invalid floating point values (nans or infs)");
-      return;
-    }
-  } else {
-    adjusted_msg->wrench.force.x = (std::isnan(msg->wrench.force.x)) ? 0.0 : msg->wrench.force.x;
-    adjusted_msg->wrench.force.y = (std::isnan(msg->wrench.force.y)) ? 0.0 : msg->wrench.force.y;
-    adjusted_msg->wrench.force.z = (std::isnan(msg->wrench.force.z)) ? 0.0 : msg->wrench.force.z;
-
-    adjusted_msg->wrench.torque.x = (std::isnan(msg->wrench.torque.x)) ? 0.0 :
-      msg->wrench.torque.x;
-    adjusted_msg->wrench.torque.y = (std::isnan(msg->wrench.torque.y)) ? 0.0 :
-      msg->wrench.torque.y;
-    adjusted_msg->wrench.torque.z = (std::isnan(msg->wrench.torque.z)) ? 0.0 :
-      msg->wrench.torque.z;
-
-    if (!validateFloats(*msg)) {
-      setStatus(
-        rviz_common::properties::StatusProperty::Ok, "Topic",
-        "Message might contain floating point values (nans or infs)");
-    }
+  if (!validateFloats(*msg)) {
+    setStatus(
+      rviz_common::properties::StatusProperty::Error, "Topic",
+      "Message contained invalid floating point values (nans or infs)");
+    return;
   }
 
   Ogre::Quaternion orientation;
   Ogre::Vector3 position;
-  rclcpp::Time time_stamp(msg->header.stamp, RCL_ROS_TIME);
   if (!context_->getFrameManager()->getTransform(
-      msg->header.frame_id, time_stamp, position, orientation))
+      msg->header.frame_id, msg->header.stamp, position, orientation))
   {
     setMissingTransformToFixedFrame(msg->header.frame_id);
     return;
@@ -181,8 +153,7 @@ void WrenchDisplay::processMessage(geometry_msgs::msg::WrenchStamped::ConstShare
     visuals_.pop_front();
   }
 
-  auto visual = (!accept_nan) ? createWrenchVisual(msg, orientation, position) :
-    createWrenchVisual(adjusted_msg, orientation, position);
+  auto visual = createWrenchVisual(msg, orientation, position);
 
   visuals_.push_back(visual);
 }
@@ -213,7 +184,6 @@ std::shared_ptr<rviz_rendering::WrenchVisual> WrenchDisplay::createWrenchVisual(
   float width = width_property_->getFloat();
   Ogre::ColourValue force_color = force_color_property_->getOgreColor();
   Ogre::ColourValue torque_color = torque_color_property_->getOgreColor();
-
   visual->setForceColor(force_color.r, force_color.g, force_color.b, alpha);
   visual->setTorqueColor(torque_color.r, torque_color.g, torque_color.b, alpha);
   visual->setForceScale(force_scale);

@@ -93,6 +93,18 @@ public:
   void
   setupSceneAfterInit(setupSceneCallback setup_scene_callback);
 
+#if 0
+  /**
+   * Set a callback which is called before each render
+   * @param func The callback functor
+   */
+  virtual void setPreRenderCallback(boost::function<void()> func);
+  /**
+     * Set a callback which is called after each render
+     * @param func The callback functor
+     */
+  virtual void setPostRenderCallback(boost::function<void()> func);
+#endif
 
   /// Get the associated Ogre viewport.
   /**
@@ -107,19 +119,11 @@ public:
   /// Set the camera associated with this render window's viewport.
   void setCamera(Ogre::Camera * camera);
 
-  void setSceneNodeCamera(Ogre::SceneNode * ogre_camera);
-
   /// Get the camera.
   Ogre::Camera * getCamera() const;
 
-  void setCameraPosition(const Ogre::Vector3 & vec);
-
-  void setCameraOrientation(const Ogre::Quaternion & quat);
-
-  Ogre::Light * getDirectionalLight() const;
-
   /// Get the main directional light.
-  void setDirectionalLightDirection(const Ogre::Vector3 & vec);
+  Ogre::Light * getDirectionalLight() const;
 
   /// Get the Ogre scene manager.
   Ogre::SceneManager * getSceneManager() const;
@@ -128,14 +132,53 @@ public:
 
   void addListener(Ogre::RenderTargetListener * listener);
   void removeListener(Ogre::RenderTargetListener * listener);
+#if 0
+  /**
+   * \brief Set the scale of the orthographic window.  Only valid for an orthographic camera.
+   * @param scale The scale
+   */
+  void setOrthoScale(float scale);
 
+  /** \brief Enable or disable stereo rendering
+   * If stereo is not supported this is ignored.
+   * @return the old setting (whether stereo was enabled before)
+   */
+  bool enableStereo(bool enable);
+
+  /** \brief Prepare to render in stereo if enabled and supported. */
+  void setupStereo();
+
+  void setAutoRender(bool auto_render) {auto_render_ = auto_render;}
+
+  ////// Functions mimicked from Ogre::Viewport to satisfy timing of
+  ////// after-constructor creation of Ogre::RenderWindow.
+  void setOverlaysEnabled(bool overlays_enabled);
+#endif
   void setBackgroundColor(Ogre::ColourValue color);
 
   void setVisibilityMask(uint32_t mask);
 
 protected:
+#if 0
+  virtual void paintEvent(QPaintEvent * e);
+  virtual void resizeEvent(QResizeEvent * event);
+
+  // When stereo is enabled, these are called before/after rendering each
+  // viewport.
+  virtual void preViewportUpdate(const Ogre::RenderTargetViewportEvent & evt);
+  virtual void postViewportUpdate(const Ogre::RenderTargetViewportEvent & evt);
+#endif
+
   /// Set the aspect ratio on the camera.
   void setCameraAspectRatio();
+
+#if 0
+  /**
+   * prepare a viewport's camera for stereo rendering.
+   * This should only be called from StereoRenderTargetListener
+   */
+  void prepareStereoViewport(Ogre::Viewport *);
+#endif
 
   QWindow * parent_;
   RenderSystem * render_system_;
@@ -144,8 +187,6 @@ protected:
   Ogre::SceneManager * ogre_scene_manager_;
   Ogre::Camera * ogre_camera_;
   Ogre::Light * ogre_directional_light_;
-  Ogre::SceneNode * ogre_camera_node_;
-  Ogre::SceneNode * ogre_light_node_;
 
   bool animating_;
 

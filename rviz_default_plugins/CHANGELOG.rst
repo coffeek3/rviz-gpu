@@ -2,267 +2,60 @@
 Changelog for package rviz_default_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-14.1.0 (2024-04-16)
--------------------
+8.2.8 (2023-03-16)
+------------------
+* Delete frame_locked_markers when reusing marker (`#907 <https://github.com/ros2/rviz/issues/907>`_) (`#912 <https://github.com/ros2/rviz/issues/912>`_)
+* Contributors: mergify[bot], Shane Loretz
 
-14.0.0 (2024-04-07)
--------------------
-* Make sure to export all rviz_default_plugins dependencies. (`#1181 <https://github.com/ros2/rviz/issues/1181>`_)
-* Increase the cpplint timeout to 180 seconds. (`#1179 <https://github.com/ros2/rviz/issues/1179>`_)
-* Switch to gz_math_vendor. (`#1177 <https://github.com/ros2/rviz/issues/1177>`_)
-* Contributors: Chris Lalancette
+8.2.7 (2022-09-12)
+------------------
+* Make Axes display use latest transform (`#892 <https://github.com/ros2/rviz/issues/892>`_) (`#904 <https://github.com/ros2/rviz/issues/904>`_)
+* Set error status when duplicate markers are in the same MarkerArray (`#891 <https://github.com/ros2/rviz/issues/891>`_) (`#901 <https://github.com/ros2/rviz/issues/901>`_)
+* Contributors: Shane Loretz
 
-13.4.2 (2024-03-27)
--------------------
-* Fixed camera info warning (`#1175 <https://github.com/ros2/rviz/issues/1175>`_)
+8.2.6 (2022-02-04)
+------------------
+* Add underscores to material names (`#811 <https://github.com/ros2/rviz/issues/811>`_) (`#824 <https://github.com/ros2/rviz/issues/824>`_)
+* Export Qt5 dependencies properly (`#687 <https://github.com/ros2/rviz/issues/687>`_) (`#822 <https://github.com/ros2/rviz/issues/822>`_)
+* Change image display to not rely on TF (`#781 <https://github.com/ros2/rviz/issues/781>`_)
+* Contributors: Cory Crean, Helen Oleynikova, Jacob Perron, Michel Hidalgo
+
+8.2.5 (2021-10-12)
+------------------
+
+8.2.4 (2021-10-05)
+------------------
+* Fixed crash when changing rendering parameters for pointcloud2 while 'Selectable' box is unchecked (`#768 <https://github.com/ros2/rviz/issues/768>`_) (`#770 <https://github.com/ros2/rviz/issues/770>`_)
 * Contributors: Alejandro Hernández Cordero
 
-13.4.1 (2024-03-26)
--------------------
-* Added CameraInfo display (`#1166 <https://github.com/ros2/rviz/issues/1166>`_)
-* apply origin rotation to inertia box visualization (`#1171 <https://github.com/ros2/rviz/issues/1171>`_)
-* Added regex filter field for TF display (`#1032 <https://github.com/ros2/rviz/issues/1032>`_)
-* Added point_cloud_transport (`#1008 <https://github.com/ros2/rviz/issues/1008>`_)
-* Contributors: Alejandro Hernández Cordero, Jonas Otto
-
-13.4.0 (2024-03-09)
--------------------
-* Select QoS reliability policy in DepthCloud Plugin (`#1159 <https://github.com/ros2/rviz/issues/1159>`_)
-* Fixed crash on DepthCloud plugin (`#1161 <https://github.com/ros2/rviz/issues/1161>`_)
-* Fixes for uncrustify 0.78. (`#1155 <https://github.com/ros2/rviz/issues/1155>`_)
-  Mostly what we do here is to disable the indentation on
-  certain constructs that are different between 0.72 and
-  0.78.  It isn't my preferred solution, but since it only
-  affects a small amount of code (and most of that in macros),
-  this seems acceptable to me.
-* Fixed crash on DepthCloudPlugin (`#1133 <https://github.com/ros2/rviz/issues/1133>`_)
-* Wrench accepth nan values fix (`#1141 <https://github.com/ros2/rviz/issues/1141>`_)
-* DepthCloud plugin: Append measured subscription frequency to topic status (`#1137 <https://github.com/ros2/rviz/issues/1137>`_)
-* Added Cache to camera display for TimeExact (`#1138 <https://github.com/ros2/rviz/issues/1138>`_)
-* Fixed transport name in DepthCloud plugin (`#1134 <https://github.com/ros2/rviz/issues/1134>`_)
-* Contributors: Alejandro Hernández Cordero, Chris Lalancette
-
-13.3.1 (2024-01-24)
--------------------
-* Fix time-syncing message (`#1121 <https://github.com/ros2/rviz/issues/1121>`_)
-* Switch from ROS_TIME to SYSTEM_TIME on rclcpp::Time construction (`#1117 <https://github.com/ros2/rviz/issues/1117>`_)
-* Append measured subscription frequency to topic status (`#1113 <https://github.com/ros2/rviz/issues/1113>`_)
-* Contributors: Alejandro Hernández Cordero, Austin Moore, Yadu
-
-13.3.0 (2023-12-26)
--------------------
-* Fix typo (`#1104 <https://github.com/ros2/rviz/issues/1104>`_)
-* Fix potencial leak / seg fault (`#726 <https://github.com/ros2/rviz/issues/726>`_)
-* Fixed screw display (`#1093 <https://github.com/ros2/rviz/issues/1093>`_)
-* Explicit time conversions and comparisons (`#1087 <https://github.com/ros2/rviz/issues/1087>`_)
-* Handle missing effort limit in URDF (`#1084 <https://github.com/ros2/rviz/issues/1084>`_)
-* Contributors: AiVerisimilitude, Alejandro Hernández Cordero, Christoph Fröhlich, Patrick Roncagliolo
-
-13.2.0 (2023-11-06)
--------------------
-* (robot) fix styling of log msg (`#1080 <https://github.com/ros2/rviz/issues/1080>`_)
-* Fix image display wrapping (`#1038 <https://github.com/ros2/rviz/issues/1038>`_)
-* removed enableInteraction reference (`#1075 <https://github.com/ros2/rviz/issues/1075>`_)
-* Contributors: Alejandro Hernández Cordero, Lewe Christiansen, Matthijs van der Burgh
-
-13.1.2 (2023-10-09)
--------------------
-* Fix ODR violations in interactive_marker displays. (`#1068 <https://github.com/ros2/rviz/issues/1068>`_)
-* Contributors: Chris Lalancette
-
-13.1.1 (2023-10-04)
--------------------
-
-13.1.0 (2023-09-07)
--------------------
-* Improve error handling in LaserScanDisplay (`#1035 <https://github.com/ros2/rviz/issues/1035>`_)
-* Fix implicit capture of "this" warning in C++20 (`#1053 <https://github.com/ros2/rviz/issues/1053>`_)
-* Removed unused code (`#1044 <https://github.com/ros2/rviz/issues/1044>`_)
-* Contributors: AiVerisimilitude, Alejandro Hernández Cordero
-
-13.0.0 (2023-08-21)
--------------------
-* Fixed AccelStamped, TwistStamped and Wrench icons (`#1041 <https://github.com/ros2/rviz/issues/1041>`_)
-* Fix the flakey rviz_rendering tests (`#1026 <https://github.com/ros2/rviz/issues/1026>`_)
-* Contributors: Alejandro Hernández Cordero, Chris Lalancette
-
-12.8.0 (2023-08-27)
--------------------
-* Don't pass screw_display.hpp to the moc generator. (`#1018 <https://github.com/ros2/rviz/issues/1018>`_)
-  Since it isn't a Qt class, you get a warning from moc:
-  Note: No relevant classes found. No output generated.
-  Just skip adding it to the moc list here, which gets rid
-  of the warning.
-* Added DepthCloud default plugin (`#996 <https://github.com/ros2/rviz/issues/996>`_)
-* Added TwistStamped and AccelStamped default plugins (`#991 <https://github.com/ros2/rviz/issues/991>`_)
-* Contributors: Alejandro Hernández Cordero, Chris Lalancette
-
-12.7.0 (2023-07-11)
--------------------
-* Added Effort plugin (`#990 <https://github.com/ros2/rviz/issues/990>`_)
-* Improve the compilation time of rviz_default_plugins (`#1007 <https://github.com/ros2/rviz/issues/1007>`_)
-* Switch to ament_cmake_vendor_package (`#995 <https://github.com/ros2/rviz/issues/995>`_)
-* Contributors: Alejandro Hernández Cordero, Chris Lalancette, Scott K Logan
-
-12.6.1 (2023-06-12)
--------------------
-
-12.6.0 (2023-06-07)
--------------------
-* Modify access specifier to protected or public for the scope of processMessage() member function (`#984 <https://github.com/ros2/rviz/issues/984>`_)
-* Contributors: Hyunseok
-
-12.5.1 (2023-05-11)
--------------------
-
-12.5.0 (2023-04-28)
--------------------
-
-12.4.0 (2023-04-18)
--------------------
-
-12.3.2 (2023-04-11)
--------------------
-* Fix ODR errors with gmock (`#967 <https://github.com/ros2/rviz/issues/967>`_)
-* Update Frame shortcut (`#958 <https://github.com/ros2/rviz/issues/958>`_)
-* Contributors: David V. Lu!!, methylDragon
-
-12.3.1 (2023-03-01)
--------------------
-* point_marker: fix bug where the number of rendered points accumulates over time (`#949 <https://github.com/ros2/rviz/issues/949>`_)
-* Contributors: AndreasR30
-
-12.3.0 (2023-02-14)
--------------------
-* Update rviz to C++17. (`#939 <https://github.com/ros2/rviz/issues/939>`_)
-* Fix tolerance calculation precision (`#934 <https://github.com/ros2/rviz/issues/934>`_)
-* Fix MeshResourceMarker for mesh with color-based embedded material (`#928 <https://github.com/ros2/rviz/issues/928>`_)
-* [rolling] Update maintainers - 2022-11-07 (`#923 <https://github.com/ros2/rviz/issues/923>`_)
-* Contributors: Audrow Nash, Chris Lalancette, Xavier BROQUERE, Xenofon Karamanos
-
-12.2.0 (2022-11-07)
--------------------
-
-12.1.0 (2022-11-02)
--------------------
-* Add Map Display binary option (`#846 <https://github.com/ros2/rviz/issues/846>`_)
-* Delete frame_locked_markers when reusing marker (`#907 <https://github.com/ros2/rviz/issues/907>`_)
-* Consider region of interest in CameraDisplay (`#864 <https://github.com/ros2/rviz/issues/864>`_)
-* std::copy fix - OccupancyGridUpdate - Data is not being processed correctly (`#895 <https://github.com/ros2/rviz/issues/895>`_)
-* Contributors: AndreasR30, Eric, Patrick Roncagliolo, Shane Loretz
-
-12.0.0 (2022-09-13)
--------------------
-* Set error status when duplicate markers are in the same MarkerArray (`#891 <https://github.com/ros2/rviz/issues/891>`_)
-* Make Axes display use latest transform (`#892 <https://github.com/ros2/rviz/issues/892>`_)
-* Show link names in inertia error message (`#874 <https://github.com/ros2/rviz/issues/874>`_)
-* Ogre 1.12.10 upgrade (`#878 <https://github.com/ros2/rviz/issues/878>`_)
-* Use make_shared to construct PointCloud2 (`#869 <https://github.com/ros2/rviz/issues/869>`_)
-* Fix include order (`#858 <https://github.com/ros2/rviz/issues/858>`_)
-* Contributors: Hunter L. Allen, Jacob Perron, Kenji Brameld, Shane Loretz, Timon Engelke
-
-11.3.0 (2022-04-26)
--------------------
-
-11.2.0 (2022-04-08)
--------------------
-* Add far plane distance property to camera (`#849 <https://github.com/ros2/rviz/issues/849>`_)
-* Contributors: Paul
-
-11.1.1 (2022-03-30)
--------------------
-
-11.1.0 (2022-03-24)
--------------------
-
-11.0.0 (2022-03-01)
--------------------
-* Drop ignition-math6 from rviz_default_plugins link interface (`#833 <https://github.com/ros2/rviz/issues/833>`_)
-* add implementation for cancel interface (`#809 <https://github.com/ros2/rviz/issues/809>`_)
-* Contributors: Chen Lihui, Scott K Logan
-
-10.0.0 (2022-02-16)
--------------------
-* Install headers to include/${PROJECT_NAME} (`#829 <https://github.com/ros2/rviz/issues/829>`_)
-* Remove definition of PLUGINLIB_DISABLE_BOOST. (`#821 <https://github.com/ros2/rviz/issues/821>`_)
-* Contributors: Chris Lalancette, Shane Loretz
-
-9.1.1 (2022-01-25)
+8.2.3 (2021-09-01)
 ------------------
+* YUV to RGB changes (`#732 <https://github.com/ros2/rviz/issues/732>`_)
+* Export InteractiveMarker (`#728 <https://github.com/ros2/rviz/issues/728>`_)
+* Contributors: Akash, cturcotte-qnx
 
-9.1.0 (2022-01-13)
+8.2.2 (2021-06-18)
 ------------------
-* Remove TF filter from ImageTransportDisplay (`#788 <https://github.com/ros2/rviz/issues/788>`_)
-* Add underscores to material names (`#811 <https://github.com/ros2/rviz/issues/811>`_)
-* Export image_transport dependency (`#813 <https://github.com/ros2/rviz/issues/813>`_)
-* Contributors: Chen Lihui, Cory Crean, Jacob Perron
+* Make the types explicit in quaternion_helper.hpp. (`#625 <https://github.com/ros2/rviz/issues/625>`_) (`#673 <https://github.com/ros2/rviz/issues/673>`_)
+  all calculations to floats.
+* Contributors: Louise Poubel
 
-9.0.1 (2021-12-17)
+8.2.1 (2020-12-09)
 ------------------
-* Fixes for uncrustify 0.72 (`#807 <https://github.com/ros2/rviz/issues/807>`_)
-* Contributors: Chris Lalancette
-
-9.0.0 (2021-11-18)
-------------------
-* Switch to using Qt::MiddleButton for RViz. (`#802 <https://github.com/ros2/rviz/issues/802>`_)
-* Add a tf_buffer_cache_time_ns to tf_wrapper (`#792 <https://github.com/ros2/rviz/issues/792>`_)
-* Make libraries to avoid compiling files multiple times (`#774 <https://github.com/ros2/rviz/issues/774>`_)
-* Computed inertia with ignition-math (`#751 <https://github.com/ros2/rviz/issues/751>`_)
-* Fixed crash when changing rendering parameters for pointcloud2 while 'Selectable' box is unchecked (`#768 <https://github.com/ros2/rviz/issues/768>`_)
-* Robot: Report mesh loading issues (`#744 <https://github.com/ros2/rviz/issues/744>`_)
-* Handle NaN values for Wrench msgs (`#746 <https://github.com/ros2/rviz/issues/746>`_)
-* Triangle lists support textures (`#719 <https://github.com/ros2/rviz/issues/719>`_)
-* Report sample lost events (`#686 <https://github.com/ros2/rviz/issues/686>`_)
-* Contributors: Alejandro Hernández Cordero, Chris Lalancette, Gonzo, Greg Balke, Ivan Santiago Paunovic, Shane Loretz, bailaC
-
-8.7.0 (2021-08-11)
-------------------
-* Fix path message orientation error (`#736 <https://github.com/ros2/rviz/issues/736>`_)
-* Set topic namespace in interactive markers display (`#725 <https://github.com/ros2/rviz/issues/725>`_)
-* mass property visualization (`#714 <https://github.com/ros2/rviz/issues/714>`_)
-* Export InteractiveMarker (`#718 <https://github.com/ros2/rviz/issues/718>`_)
-* Yuv to rgb changes (`#701 <https://github.com/ros2/rviz/issues/701>`_)
-* Extract message type in ImageTransportDisplay (`#711 <https://github.com/ros2/rviz/issues/711>`_)
-* Duplicated code RobotJoint (`#702 <https://github.com/ros2/rviz/issues/702>`_)
-* Don't attempt to moc generate files that don't have QOBJECT. (`#690 <https://github.com/ros2/rviz/issues/690>`_)
-* Switch to including tf2_geometry_msgs.hpp (`#689 <https://github.com/ros2/rviz/issues/689>`_)
-* Contributors: Akash, Alejandro Hernández Cordero, Chris Lalancette, Paul, Rebecca Butler, brian soe, cturcotte-qnx
-
-8.6.0 (2021-05-13)
-------------------
-* Export Qt5 dependencies properly (`#687 <https://github.com/ros2/rviz/issues/687>`_)
-* Add support for namespace-scoped DELETEALL action in Marker displays (`#685 <https://github.com/ros2/rviz/issues/685>`_)
-* Use image_transport to subscribe to image messages (`#523 <https://github.com/ros2/rviz/issues/523>`_)
-* Contributors: Audrow Nash, ketatam, Martin Idel, Michel Hidalgo
-
-8.5.0 (2021-04-06)
-------------------
-
-8.4.0 (2021-03-18)
-------------------
-* Add ViewPicker::get3DPatch to the public API (`#657 <https://github.com/ros2/rviz/issues/657>`_)
-* Allow to zoom more with orbit controller (`#654 <https://github.com/ros2/rviz/issues/654>`_)
-* Contributors: Joseph Schornak, Victor Lamoine
-
-8.3.1 (2021-01-25)
-------------------
-* Fix possible nullptr access in robot_joint.cpp. (`#636 <https://github.com/ros2/rviz/issues/636>`_)
-* Contributors: Chris Lalancette
-
-8.3.0 (2020-12-08)
-------------------
-* Fix for mousewheel to zoom in/out (`#623 <https://github.com/ros2/rviz/issues/623>`_)
-* Make the types explicit in quaternion_helper.hpp. (`#625 <https://github.com/ros2/rviz/issues/625>`_)
-* Update status message by removing colon or adjust colon position (`#624 <https://github.com/ros2/rviz/issues/624>`_)
-* Do not use assume every RenderPanel has a ViewController. (`#613 <https://github.com/ros2/rviz/issues/613>`_)
-* Add linters and use ament_lint_auto (`#608 <https://github.com/ros2/rviz/issues/608>`_)
-* Update maintainers (`#607 <https://github.com/ros2/rviz/issues/607>`_)
-* TimePanel port (`#599 <https://github.com/ros2/rviz/issues/599>`_)
-* Upgrade to tinyxml2 for rviz (`#418 <https://github.com/ros2/rviz/issues/418>`_)
-* Use retriever.hpp (`#589 <https://github.com/ros2/rviz/issues/589>`_)
-* Added covariance settings to set pose estimate (`#569 <https://github.com/ros2/rviz/issues/569>`_)
-* use reference in range loops to avoid copy (`#577 <https://github.com/ros2/rviz/issues/577>`_)
-* Contributors: Chen Lihui, Chris Lalancette, Dirk Thomas, Jacob Perron, Martin Idel, Matthijs den Toom, Michel Hidalgo, Nico Neumann, Shane Loretz
+* Fix for mousewheel to zoom in/out (`#623 <https://github.com/ros2/rviz/issues/623>`_) (`#626 <https://github.com/ros2/rviz/issues/626>`_)
+* Update maintainer list (`#619 <https://github.com/ros2/rviz/issues/619>`_)
+* Do not use assume every RenderPanel has a ViewController. (`#613 <https://github.com/ros2/rviz/issues/613>`_) (`#615 <https://github.com/ros2/rviz/issues/615>`_)
+* [foxy-backport] fast forward of ros2 (default) to foxy (`#570 <https://github.com/ros2/rviz/issues/570>`_)
+  * restore compatibility with older Qt versions (`#561 <https://github.com/ros2/rviz/issues/561>`_)
+  * Suppress warnings when building with older Qt versions. (`#562 <https://github.com/ros2/rviz/issues/562>`_)
+  * Don't try to moc generate env_config.hpp file. (`#550 <https://github.com/ros2/rviz/issues/550>`_)
+  This removes one more warning from rviz_common builds.
+  * rewrite hack to avoid CMake warning with assimp 5.0.1 and older, apply cross platform (`#565 <https://github.com/ros2/rviz/issues/565>`_)
+  * Use dedicated TransformListener thread (`#551 <https://github.com/ros2/rviz/issues/551>`_)
+  * restore alphabetical include order (`#563 <https://github.com/ros2/rviz/issues/563>`_)
+  * Don't install test header files in rviz_rendering. (`#564 <https://github.com/ros2/rviz/issues/564>`_)
+* Contributors: Jacob Perron, Michael Jeronimo, Michel Hidalgo, William Woodall, Chen Lihui, Dirk Thomas, Chris Lalancette, ymd-stella
+  Karsten Knese
 
 8.2.0 (2020-06-23)
 ------------------

@@ -69,8 +69,6 @@ Robot::Robot(
   visible_(true),
   visual_visible_(true),
   collision_visible_(false),
-  mass_visible_(false),
-  inertia_visible_(false),
   context_(context),
   doing_set_checkbox_(false),
   robot_loaded_(false),
@@ -85,8 +83,6 @@ Robot::Robot(
 
   setVisualVisible(visual_visible_);
   setCollisionVisible(collision_visible_);
-  setMassVisible(mass_visible_);
-  setInertiaVisible(inertia_visible_);
   setAlpha(1.0f);
 
   link_tree_ = new Property("Links", QVariant(), "", parent_property);
@@ -140,12 +136,7 @@ Robot::~Robot()
   delete link_factory_;
 }
 
-void Robot::load(
-  const urdf::ModelInterface & urdf,
-  bool visual,
-  bool collision,
-  bool mass,
-  bool inertia)
+void Robot::load(const urdf::ModelInterface & urdf, bool visual, bool collision)
 {
   link_tree_->hide();  // hide until loaded
   robot_loaded_ = false;
@@ -157,7 +148,7 @@ void Robot::load(
   root_link_ = nullptr;
 
   // Properties are not added to display until changedLinkTreeStyle() is called (below).
-  createLinkProperties(urdf, visual, collision, mass, inertia);
+  createLinkProperties(urdf, visual, collision);
   createJointProperties(urdf);
 
   // robot is now loaded
@@ -173,8 +164,6 @@ void Robot::load(
 
   setVisualVisible(isVisualVisible() );
   setCollisionVisible(isCollisionVisible() );
-  setMassVisible(isMassVisible());
-  setInertiaVisible(isInertiaVisible());
 }
 
 void Robot::clear()
@@ -258,9 +247,9 @@ void Robot::log_error(
   // TODO(wjwwood): restore throttle behavior of ROS_ERROR_THROTTLE
   RVIZ_COMMON_LOG_ERROR_STREAM(
     // 1.0,
-    visual_or_collision << ": " << position_or_orientation << " of link " << link->getName() <<
+    visual_or_collision << position_or_orientation << link->getName().c_str() <<
       " contains NaNs. Skipping render as long as the " << position_or_orientation <<
-      " is invalid.";
+      "is invalid.";
   );
 }
 
@@ -290,18 +279,6 @@ void Robot::setCollisionVisible(bool visible)
   updateLinkVisibilities();
 }
 
-void Robot::setMassVisible(bool visible)
-{
-  mass_visible_ = visible;
-  updateLinkVisibilities();
-}
-
-void Robot::setInertiaVisible(bool visible)
-{
-  inertia_visible_ = visible;
-  updateLinkVisibilities();
-}
-
 void Robot::updateLinkVisibilities()
 {
   for (auto & link_map_entry : links_) {
@@ -323,16 +300,6 @@ bool Robot::isVisualVisible()
 bool Robot::isCollisionVisible()
 {
   return collision_visible_;
-}
-
-bool Robot::isMassVisible()
-{
-  return mass_visible_;
-}
-
-bool Robot::isInertiaVisible()
-{
-  return inertia_visible_;
 }
 
 void Robot::setAlpha(float a)
@@ -443,11 +410,9 @@ RobotLink * Robot::LinkFactory::createLink(
   const urdf::LinkConstSharedPtr & link,
   const std::string & parent_joint_name,
   bool visual,
-  bool collision,
-  bool mass,
-  bool inertia)
+  bool collision)
 {
-  return new RobotLink(robot, link, parent_joint_name, visual, collision, mass, inertia);
+  return new RobotLink(robot, link, parent_joint_name, visual, collision);
 }
 
 RobotJoint * Robot::LinkFactory::createJoint(
@@ -457,12 +422,7 @@ RobotJoint * Robot::LinkFactory::createJoint(
   return new RobotJoint(robot, joint);
 }
 
-void Robot::createLinkProperties(
-  const urdf::ModelInterface & urdf,
-  bool visual,
-  bool collision,
-  bool mass,
-  bool inertia)
+void Robot::createLinkProperties(const urdf::ModelInterface & urdf, bool visual, bool collision)
 {
   for (const auto & link_entry : urdf.links_) {
     const urdf::LinkConstSharedPtr & urdf_link = link_entry.second;
@@ -473,7 +433,7 @@ void Robot::createLinkProperties(
     }
 
     RobotLink * link = link_factory_->createLink(
-      this, urdf_link, parent_joint_name, visual, collision, mass, inertia);
+      this, urdf_link, parent_joint_name, visual, collision);
 
     if (urdf_link == urdf.getRoot()) {
       root_link_ = link;

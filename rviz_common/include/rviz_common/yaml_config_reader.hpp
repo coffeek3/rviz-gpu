@@ -36,7 +36,10 @@
 #include "rviz_common/config.hpp"
 #include "rviz_common/visibility_control.hpp"
 
-#include "yaml-cpp/yaml.h"
+namespace YAML
+{
+class Node;
+}
 
 namespace rviz_common
 {

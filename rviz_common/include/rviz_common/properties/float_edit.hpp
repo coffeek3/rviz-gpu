@@ -49,7 +49,7 @@ public:
   explicit FloatEdit(QWidget * parent = 0);
 
   /// Return the internal value.
-  virtual float getValue() const;
+  virtual float getValue();
 
   /// Set the internal value.
   virtual void setValue(float new_value);

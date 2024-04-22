@@ -32,16 +32,16 @@
 
 #include <string>
 
-#include "OgreHardwareBufferManager.h"
-#include "OgreMaterial.h"
-#include "OgreMaterialManager.h"
-#include "OgreMeshManager.h"
-#include "OgreMeshSerializer.h"
-#include "OgrePass.h"
-#include "OgreSubMesh.h"
-#include "OgreTechnique.h"
-#include "OgreTextureManager.h"
-#include "OgreVector.h"
+#include <OgreHardwareBufferManager.h>
+#include <OgreMaterial.h>
+#include <OgreMaterialManager.h>
+#include <OgreMeshManager.h>
+#include <OgreMeshSerializer.h>
+#include <OgrePass.h>
+#include <OgreSubMesh.h>
+#include <OgreTechnique.h>
+#include <OgreTextureManager.h>
+#include <OgreVector3.h>
 
 #include <QDir>  // NOLINT cpplint cannot handle include order here
 #include <QFileInfo>  // NOLINT cpplint cannot handle include order here
@@ -49,23 +49,26 @@
 
 #define ASSIMP_UNIFIED_HEADER_NAMES 1
 #if defined(ASSIMP_UNIFIED_HEADER_NAMES)
-#include "assimp/Importer.hpp"
-#include "assimp/scene.h"
-#include "assimp/postprocess.h"
-#include "assimp/IOStream.hpp"
-#include "assimp/IOSystem.hpp"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <assimp/IOStream.hpp>
+#include <assimp/IOSystem.hpp>
 #else
-#include "assimp/assimp.hpp"
-#include "assimp/aiScene.h"
-#include "assimp/aiPostProcess.h"
-#include "assimp/IOStream.h"
-#include "assimp/IOSystem.h"
+#include <assimp/assimp.hpp>
+#include <assimp/aiScene.h>
+#include <assimp/aiPostProcess.h>
+#include <assimp/IOStream.h>
+#include <assimp/IOSystem.h>
 #endif
 
-#include "resource_retriever/retriever.hpp"
+#include "resource_retriever/retriever.h"
 
 #include "mesh_loader_helpers/assimp_loader.hpp"
+#include "mesh_loader_helpers/stl_loader.hpp"
 #include "rviz_rendering/logging.hpp"
+
+#define ROS_PACKAGE_NAME "rviz_rendering"
 
 namespace rviz_rendering
 {
@@ -103,9 +106,22 @@ Ogre::MeshPtr loadMeshFromResource(const std::string & resource_path)
       Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(
         resource_path, ROS_PACKAGE_NAME);
       ser.importMesh(stream, mesh.get());
-      stream->close();
 
       return mesh;
+    } else if (ext == "stl" || ext == "STL" || ext == "stlb" || ext == "STLB") {
+      auto res = getResource(resource_path);
+
+      if (res.size == 0) {
+        return Ogre::MeshPtr();
+      }
+
+      STLLoader stl_loader;
+      if (!stl_loader.load(res.data.get(), res.size, resource_path)) {
+        RVIZ_RENDERING_LOG_ERROR_STREAM("Failed to load file [" << resource_path.c_str() << "]");
+        return Ogre::MeshPtr();
+      }
+
+      return stl_loader.toMesh(resource_path);
     } else {
       AssimpLoader assimp_loader;
 

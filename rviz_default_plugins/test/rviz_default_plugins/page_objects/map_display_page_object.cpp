@@ -27,8 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <QString>
-
 #include "map_display_page_object.hpp"
 
 MapDisplayPageObject::MapDisplayPageObject()

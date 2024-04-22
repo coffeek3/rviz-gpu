@@ -104,12 +104,16 @@ void PolygonDisplay::processMessage(geometry_msgs::msg::PolygonStamped::ConstSha
     return;
   }
 
-  rclcpp::Time msg_time(msg->header.stamp, RCL_ROS_TIME);
-  if (!updateFrame(msg->header.frame_id, msg_time)) {
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  if (!context_->getFrameManager()->getTransform(msg->header, position, orientation)) {
     setMissingTransformToFixedFrame(msg->header.frame_id);
     return;
   }
   setTransformOk();
+
+  scene_node_->setPosition(position);
+  scene_node_->setOrientation(orientation);
 
   manual_object_->clear();
 

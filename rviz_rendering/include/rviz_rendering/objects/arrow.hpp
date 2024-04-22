@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OgreVector.h>
+#include <OgreVector3.h>
 
 #include "object.hpp"
 #include "rviz_rendering/visibility_control.hpp"

@@ -162,7 +162,8 @@ public:
   rviz_common::properties::EnumProperty * style_property_;
   rviz_common::properties::FloatProperty * decay_time_property_;
 
-  void setAutoSize(bool auto_size);
+// TODO(anhosi): check if still needed when migrating DepthCloud
+//  void setAutoSize(bool auto_size);
 
 public Q_SLOTS:
   void causeRetransform();
@@ -177,11 +178,9 @@ private Q_SLOTS:
   void setXyzTransformerOptions(rviz_common::properties::EnumProperty * prop);
   void setColorTransformerOptions(rviz_common::properties::EnumProperty * prop);
 
-protected:
-  void processMessage(sensor_msgs::msg::PointCloud2::ConstSharedPtr cloud);
-
 private:
   bool transformCloud(const CloudInfoPtr & cloud, bool fully_update_transformers);
+  void processMessage(sensor_msgs::msg::PointCloud2::ConstSharedPtr cloud);
   bool transformPoints(
     const CloudInfoPtr & cloud_info, V_PointCloudPoint & cloud_points, bool update_transformers);
   void setProblematicPointsToInfinity(V_PointCloudPoint & cloud_points);

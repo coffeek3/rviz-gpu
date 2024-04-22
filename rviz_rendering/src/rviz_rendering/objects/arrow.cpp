@@ -35,7 +35,7 @@
 #include <OgreQuaternion.h>
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
-#include <OgreVector.h>
+#include <OgreVector3.h>
 
 #include "rviz_rendering/objects/shape.hpp"
 

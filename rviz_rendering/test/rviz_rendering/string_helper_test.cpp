@@ -27,13 +27,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
 #include <string>
 #include <vector>
 
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
-
-#include "../../src/rviz_rendering/string_helper.cpp"  // NOLINT (build/include)
+#include "../../src/rviz_rendering/string_helper.cpp"
 
 using namespace ::testing;  // NOLINT
 

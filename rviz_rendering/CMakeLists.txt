@@ -2,10 +2,9 @@ cmake_minimum_required(VERSION 3.5)
 
 project(rviz_rendering)
 
-# Default to C++17
+# Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_STANDARD 14)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -27,7 +26,7 @@ else()
   set(SKIP_DISPLAY_TESTS "SKIP_TEST")
 endif()
 
-find_package(ament_cmake_ros REQUIRED)
+find_package(ament_cmake REQUIRED)
 
 # do find_package(rviz_ogre_vendor) first to make sure the custom OGRE is found
 find_package(rviz_ogre_vendor REQUIRED)
@@ -73,83 +72,76 @@ add_library(rviz_rendering SHARED
   src/rviz_rendering/logging.cpp
   src/rviz_rendering/material_manager.cpp
   src/rviz_rendering/mesh_loader.cpp
-  src/rviz_rendering/objects/mesh_shape.cpp
   src/rviz_rendering/ogre_logging.cpp
   src/rviz_rendering/ogre_render_window_impl.cpp
   src/rviz_rendering/orthographic.cpp
   src/rviz_rendering/render_system.cpp
   src/rviz_rendering/render_window.cpp
   src/rviz_rendering/resource_config.cpp
+  src/rviz_rendering/mesh_loader_helpers/stl_loader.cpp
   src/rviz_rendering/mesh_loader_helpers/assimp_loader.cpp
   src/rviz_rendering/string_helper.cpp
   src/rviz_rendering/objects/arrow.cpp
   src/rviz_rendering/objects/axes.cpp
   src/rviz_rendering/objects/billboard_line.cpp
   src/rviz_rendering/objects/covariance_visual.cpp
-  src/rviz_rendering/objects/effort_visual.cpp
   src/rviz_rendering/objects/grid.cpp
   src/rviz_rendering/objects/line.cpp
   src/rviz_rendering/objects/movable_text.cpp
   src/rviz_rendering/objects/object.cpp
   src/rviz_rendering/objects/point_cloud.cpp
   src/rviz_rendering/objects/point_cloud_renderable.cpp
-  src/rviz_rendering/objects/screw_visual.cpp
   src/rviz_rendering/objects/shape.cpp
-  src/rviz_rendering/objects/triangle_polygon.cpp
   src/rviz_rendering/objects/wrench_visual.cpp
 )
 
-target_link_libraries(rviz_rendering PUBLIC
-  Qt5::Widgets
+target_link_libraries(rviz_rendering
+  PUBLIC
   rviz_ogre_vendor::OgreMain
   rviz_ogre_vendor::OgreOverlay
-)
-if(TARGET Eigen3::Eigen)
-  # TODO(sloretz) require target to exist when https://github.com/ros2/choco-packages/issues/19 is addressed
-  target_link_libraries(rviz_rendering PUBLIC Eigen3::Eigen)
-else()
-  target_include_directories(rviz_rendering PUBLIC ${Eigen3_INCLUDE_DIRS})
-endif()
-
-target_link_libraries(rviz_rendering PRIVATE
+  Qt5::Widgets
   ament_index_cpp::ament_index_cpp
-  assimp::assimp
   resource_retriever::resource_retriever
 )
 
 target_include_directories(rviz_rendering
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+    $<INSTALL_INTERFACE:include>
+    ${Eigen3_INCLUDE_DIRS}
 )
 # Causes the visibility macros to use dllexport rather than dllimport,
 # which is appropriate when building the dll but not consuming it.
 target_compile_definitions(rviz_rendering PRIVATE "RVIZ_RENDERING_BUILDING_LIBRARY")
 
-ament_export_dependencies(
-  Eigen3
-  Qt5
-  rviz_ogre_vendor
-)
-
-# Export old-style CMake variables
-ament_export_include_directories("include/${PROJECT_NAME}")
-ament_export_libraries(rviz_rendering)
-
-# Export modern CMake targets
 ament_export_targets(rviz_rendering)
+ament_target_dependencies(rviz_rendering
+  PUBLIC
+  rviz_assimp_vendor
+)
+ament_export_dependencies(
+  rviz_ogre_vendor
+  rviz_assimp_vendor
+  eigen3_cmake_module
+  Eigen3
+  resource_retriever
+  ament_index_cpp)
+
+ament_export_include_directories(include)
+ament_export_libraries(rviz_rendering)
 
 install(
   TARGETS rviz_rendering
   EXPORT rviz_rendering
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
+  INCLUDES DESTINATION include
   RUNTIME DESTINATION bin
 )
 
 install(
   DIRECTORY include/
-  DESTINATION include/${PROJECT_NAME}
+  DESTINATION include
 )
 
 set(rviz_rendering_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake")
@@ -163,8 +155,15 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ogre_media"
   USE_SOURCE_PERMISSIONS)
 
 if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
+  # TODO(wjwwood): replace this with ament_lint_auto() and/or add the copyright linter back
+  find_package(ament_cmake_cppcheck REQUIRED)
+  find_package(ament_cmake_cpplint REQUIRED)
+  find_package(ament_cmake_lint_cmake REQUIRED)
+  find_package(ament_cmake_uncrustify REQUIRED)
+  ament_cppcheck()
+  ament_cpplint()
+  ament_lint_cmake()
+  ament_uncrustify()
 
   find_package(ament_cmake_gmock REQUIRED)
   find_package(ament_cmake_gtest REQUIRED)
@@ -173,8 +172,6 @@ if(BUILD_TESTING)
     test/rviz_rendering/ogre_testing_environment.cpp
     test/rviz_rendering/scene_graph_introspection.cpp
   )
-  target_compile_definitions(rviz_rendering_test_utils PRIVATE
-    "TEST_RVIZ_RENDERING_BUILDING_LIBRARY")
   target_link_libraries(rviz_rendering_test_utils
     PUBLIC
     rviz_ogre_vendor::OgreMain
@@ -234,18 +231,6 @@ if(BUILD_TESTING)
     )
   endif()
 
-  ament_add_gmock(effort_visual_test_target
-    test/rviz_rendering/objects/effort_visual_test.cpp
-    ${SKIP_DISPLAY_TESTS})
-  if(TARGET effort_visual_test_target)
-    target_link_libraries(effort_visual_test_target
-      rviz_ogre_vendor::OgreMain
-      rviz_rendering
-      rviz_rendering_test_utils
-      Qt5::Widgets  # explicitly do this for include directories (not necessary for external use)
-    )
-  endif()
-
   ament_add_gmock(grid_test_target
     test/rviz_rendering/objects/grid_test.cpp
     ${SKIP_DISPLAY_TESTS})
@@ -283,47 +268,11 @@ if(BUILD_TESTING)
     )
   endif()
 
-  ament_add_gmock(screw_visual_test_target
-    test/rviz_rendering/objects/screw_visual_test.cpp
-    ${SKIP_DISPLAY_TESTS})
-  if(TARGET screw_visual_test_target)
-    target_link_libraries(screw_visual_test_target
-      rviz_ogre_vendor::OgreMain
-      rviz_rendering
-      rviz_rendering_test_utils
-      Qt5::Widgets  # explicitly do this for include directories (not necessary for external use)
-    )
-  endif()
-
-  ament_add_gmock(triangle_polygon_visual_test_target
-    test/rviz_rendering/objects/triangle_polygon_test.cpp
-    ${SKIP_DISPLAY_TESTS})
-  if(TARGET triangle_polygon_visual_test_target)
-    target_link_libraries(triangle_polygon_visual_test_target
-      rviz_ogre_vendor::OgreMain
-      rviz_rendering
-      rviz_rendering_test_utils
-      Qt5::Widgets  # explicitly do this for include directories (not necessary for external use)
-    )
-  endif()
-
   ament_add_gmock(wrench_visual_test_target
     test/rviz_rendering/objects/wrench_visual_test.cpp
     ${SKIP_DISPLAY_TESTS})
   if(TARGET wrench_visual_test_target)
     target_link_libraries(wrench_visual_test_target
-      rviz_ogre_vendor::OgreMain
-      rviz_rendering
-      rviz_rendering_test_utils
-      Qt5::Widgets  # explicitly do this for include directories (not necessary for external use)
-    )
-  endif()
-
-  ament_add_gmock(mesh_shape_visual_test_target
-    test/rviz_rendering/mesh_shape_test.cpp
-    ${SKIP_DISPLAY_TESTS})
-  if(TARGET mesh_shape_visual_test_target)
-    target_link_libraries(mesh_shape_visual_test_target
       rviz_ogre_vendor::OgreMain
       rviz_rendering
       rviz_rendering_test_utils

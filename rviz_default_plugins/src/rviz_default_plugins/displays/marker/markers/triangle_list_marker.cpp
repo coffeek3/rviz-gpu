@@ -30,24 +30,18 @@
 
 #include "rviz_default_plugins/displays/marker/markers/triangle_list_marker.hpp"
 
-#include <string>
 #include <vector>
 
-#include <OgreDataStream.h>
-#include <OgreImage.h>
-#include <OgreManualObject.h>
-#include <OgreMaterialManager.h>
-#include <OgreResourceGroupManager.h>
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
+#include <OgreManualObject.h>
+#include <OgreMaterialManager.h>
 #include <OgreTextureManager.h>
 #include <OgreTechnique.h>
 
-#include "resource_retriever/retriever.hpp"
 #include "rviz_rendering/mesh_loader.hpp"
 #include "rviz_rendering/material_manager.hpp"
 #include "rviz_common/display_context.hpp"
-#include "rviz_common/load_resource.hpp"
 #include "rviz_common/logging.hpp"
 #include "rviz_common/uniform_string_stream.hpp"
 
@@ -146,11 +140,8 @@ void TriangleListMarker::initializeManualObject(
   manual_object_ = context_->getSceneManager()->createManualObject(ss.str());
   scene_node_->attachObject(manual_object_);
 
-  texture_name_ = ss.str() + std::string("Texture");
-  if (textureEmbedded(new_message)) {
-    texture_name_ += getTextureName(new_message);
-  }
-  material_name_ = ss.str() + std::string("Material");
+  ss << "Material";
+  material_name_ = ss.str();
   material_ = rviz_rendering::MaterialManager::createMaterialWithLighting(material_name_);
   material_->setCullingMode(Ogre::CULL_NONE);
   handler_ = rviz_common::interaction::createSelectionHandler<MarkerSelectionHandler>(
@@ -177,7 +168,7 @@ void TriangleListMarker::beginManualObject(
   // If we have the same number of tris as previously, just update the object
   if (old_message &&
     num_points == old_message->points.size() &&
-    manual_object_->getSections().size() > 0)
+    manual_object_->getNumSections() > 0)
   {
     manual_object_->beginUpdate(0);
   } else {  // Otherwise clear it and begin anew
@@ -226,12 +217,6 @@ bool TriangleListMarker::fillManualObjectAndDetermineAlpha(
           new_message->colors[i / 3].b,
           new_message->color.a * new_message->colors[i / 3].a);
       }
-
-      if (hasTexture(new_message)) {
-        manual_object_->textureCoord(
-          new_message->uv_coordinates[i + c].u,
-          new_message->uv_coordinates[i + c].v);
-      }
     }
   }
   return any_vertex_has_alpha;
@@ -264,36 +249,6 @@ void TriangleListMarker::updateMaterial(
     material_->getTechnique(0)->setSceneBlending(Ogre::SBT_REPLACE);
     material_->getTechnique(0)->setDepthWriteEnabled(true);
   }
-
-  if (hasTexture(new_message) && textureEmbedded(new_message)) {
-    // If the texture is already loaded, delete it.
-    Ogre::ResourcePtr texture = Ogre::TextureManager::getSingleton().getByName(
-      texture_name_, "rviz_rendering");
-    if (texture != NULL) {
-      Ogre::TextureManager::getSingleton().remove(texture);
-    }
-
-    loadTexture(new_message);
-    material_->getTechnique(0)->setLightingEnabled(true);
-    material_->setReceiveShadows(false);
-    material_->setCullingMode(Ogre::CULL_NONE);
-    material_->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
-    material_->getTechnique(0)->getPass(0)->setSceneBlending(
-      Ogre::SBT_TRANSPARENT_ALPHA);
-  }
-}
-
-void TriangleListMarker::loadTexture(const MarkerBase::MarkerConstSharedPtr & new_message) const
-{
-  // Have to pass non-const date to MemoryDataStream so copy into non-const buffer.
-  std::vector<unsigned char> texture = new_message->texture.data;
-  Ogre::DataStreamPtr data_stream(new Ogre::MemoryDataStream(
-      texture.data(),
-      texture.size(), false, true));
-  Ogre::Image img;
-  img.load(data_stream, new_message->texture.format);
-  Ogre::TextureManager::getSingleton().loadImage(
-    texture_name_, "rviz_rendering", img, Ogre::TEX_TYPE_2D);
 }
 
 bool TriangleListMarker::hasFaceColors(const MarkerBase::MarkerConstSharedPtr new_message) const
@@ -304,34 +259,6 @@ bool TriangleListMarker::hasFaceColors(const MarkerBase::MarkerConstSharedPtr ne
 bool TriangleListMarker::hasVertexColors(const MarkerBase::MarkerConstSharedPtr new_message) const
 {
   return new_message->colors.size() == new_message->points.size();
-}
-
-bool TriangleListMarker::hasTexture(const MarkerBase::MarkerConstSharedPtr new_message) const
-{
-  return !new_message->texture_resource.empty() &&
-         new_message->uv_coordinates.size() == new_message->points.size();
-}
-
-bool TriangleListMarker::textureEmbedded(const MarkerBase::MarkerConstSharedPtr new_message) const
-{
-  return !new_message->texture_resource.empty() &&
-         new_message->texture_resource.find("embedded://") == 0;
-}
-
-std::string TriangleListMarker::getTextureName(const MarkerBase::MarkerConstSharedPtr new_message)
-const
-{
-  if (new_message->texture_resource.empty()) {
-    return "";
-  }
-
-  size_t index = new_message->texture_resource.find("://");
-  if (index == std::string::npos) {
-    return "";
-  }
-
-  // Index past "://" by adding 3 to the result of find.
-  return new_message->texture_resource.substr(index + 3);
 }
 
 S_MaterialPtr TriangleListMarker::getMaterials()

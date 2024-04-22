@@ -43,7 +43,7 @@
 #include <OgreSceneNode.h>
 #include <OgreTextureManager.h>
 #include <OgreViewport.h>
-#include <OgreVector.h>
+#include <OgreVector3.h>
 
 #include "rviz_common/logging.hpp"
 
@@ -80,10 +80,8 @@ void ViewPicker::initialize()
   auto scene_manager = context_->getSceneManager();
 
   camera_ = scene_manager->createCamera("ViewPicker_camera");
-  auto camera_node = scene_manager->getRootSceneNode()->createChildSceneNode();
-  camera_node->attachObject(camera_);
 
-  renderer_->initialize(camera_);
+  renderer_->initialize(camera_, scene_manager);
 
   handler_manager_ = context_->getHandlerManager();
 }

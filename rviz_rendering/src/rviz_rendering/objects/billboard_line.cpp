@@ -32,7 +32,7 @@
 
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
-#include <OgreVector.h>
+#include <OgreVector3.h>
 #include <OgreQuaternion.h>
 #include <OgreBillboardChain.h>
 #include <OgreMaterialManager.h>
@@ -120,7 +120,7 @@ Ogre::BillboardChain * BillboardLine::createChain()
   static int count = 0;
   ss << "BillboardLine chain" << count++;
   Ogre::BillboardChain * chain = scene_manager_->createBillboardChain(ss.str());
-  chain->setMaterialName(material_->getName());
+  chain->setMaterialName(material_->getName() );
   scene_node_->attachObject(chain);
 
   chain_containers_.push_back(chain);

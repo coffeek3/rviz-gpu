@@ -285,12 +285,6 @@ public:
   properties::Property *
   findProperty(const QString & name);
 
-  /// Get the latest transform to the frame and update the scene node. Return true on success.
-  bool updateFrame(const std::string & frame);
-
-  /// Get transform to the frame at the given time and update the scene node. True on success.
-  bool updateFrame(const std::string & frame, rclcpp::Time time);
-
 Q_SIGNALS:
   void
   timeSignal(rviz_common::Display * display, rclcpp::Time time);
@@ -374,6 +368,13 @@ protected:
 
   /// The Ogre::SceneNode to hold all 3D scene elements shown by this Display.
   Ogre::SceneNode * scene_node_;
+
+#if 0
+  /** @brief A NodeHandle whose CallbackQueue is run from a different thread than the GUI.
+   *
+   * This is configured after the constructor and before onInitialize() is called. */
+  ros::NodeHandle threaded_nh_;
+#endif
 
   /// A convenience variable equal to context_->getFixedFrame().
   /**

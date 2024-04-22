@@ -34,7 +34,7 @@
 #include <cmath>
 #include <vector>
 
-#include <OgreVector.h>
+#include <OgreVector3.h>
 #include <OgreQuaternion.h>
 
 #include "geometry_msgs/msg/point_stamped.hpp"

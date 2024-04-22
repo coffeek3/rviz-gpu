@@ -42,7 +42,7 @@
 #include <OgreQuaternion.h>
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
-#include <OgreVector.h>
+#include <OgreVector3.h>
 #include <OgreViewport.h>
 
 #include "rviz_common/display_context.hpp"
@@ -72,7 +72,7 @@ OrbitViewController::OrbitViewController()
   distance_property_ = new FloatProperty(
     "Distance", DISTANCE_START,
     "Distance from the focal point.", this);
-  distance_property_->setMin(0.001f);
+  distance_property_->setMin(0.01f);
 
   focal_shape_size_property_ = new FloatProperty(
     "Focal Shape Size", FOCAL_SHAPE_SIZE_START,
@@ -165,8 +165,8 @@ void OrbitViewController::setShiftOrbitStatus()
 {
   setStatus(
     "<b>Left-Click:</b> Move X/Y.  "
-    "<b>Right-Click:</b> Move Z.  "
-    "<b>Mouse Wheel:</b> Zoom.");
+    "<b>Right-Click:</b>: Move Z.  "
+    "<b>Mouse Wheel:</b>: Zoom.");
 }
 
 void OrbitViewController::setDefaultOrbitStatus()
@@ -174,8 +174,8 @@ void OrbitViewController::setDefaultOrbitStatus()
   setStatus(
     "<b>Left-Click:</b> Rotate.  "
     "<b>Middle-Click:</b> Move X/Y.  "
-    "<b>Right-Click/Mouse Wheel:</b> Zoom.  "
-    "<b>Shift:</b> More options.");
+    "<b>Right-Click/Mouse Wheel:</b>: Zoom.  "
+    "<b>Shift</b>: More options.");
 }
 
 bool OrbitViewController::setMouseMovementFromEvent(

@@ -35,7 +35,7 @@
 #include <vector>
 
 #include <OgreBillboardChain.h>
-#include <OgreVector.h>
+#include <OgreVector3.h>
 #include <OgreColourValue.h>
 #include <OgreMaterial.h>
 #include <OgreSharedPtr.h>

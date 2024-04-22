@@ -35,8 +35,8 @@
 #include <string>
 #include <vector>
 
-#include "OgreHardwareBufferManager.h"
-#include "OgreMesh.h"
+#include <OgreHardwareBufferManager.h>
+#include <OgreMesh.h>
 
 #include <QDir>  // NOLINT cpplint cannot handle include order here
 #include <QFileInfo>  // NOLINT cpplint cannot handle include order here
@@ -44,16 +44,17 @@
 
 #define ASSIMP_UNIFIED_HEADER_NAMES 1
 #if defined(ASSIMP_UNIFIED_HEADER_NAMES)
-#include "assimp/Importer.hpp"
-#include "assimp/scene.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
 #else
-#include "assimp/aiScene.h"
+#include <assimp/aiScene.h>
 #endif
 
-#include "resource_retriever/retriever.hpp"
+#include "resource_retriever/retriever.h"
 
 #include "rviz_rendering/logging.hpp"
 
+#define ROS_PACKAGE_NAME "rviz_rendering"
 namespace rviz_rendering
 {
 class AssimpLoader
@@ -106,12 +107,8 @@ private:
     const std::string & resource_path,
     Ogre::MaterialPtr & mat,
     const aiMaterial * ai_material,
-    MaterialInternals & material_internals,
-    const aiScene * ai_scene);
+    MaterialInternals & material_internals);
   void loadTexture(const std::string & resource_path);
-  void loadEmbeddedTexture(
-    const aiTexture * ai_texture,
-    const std::string & resource_path);
   void setBlending(
     Ogre::MaterialPtr & mat, const aiMaterial * ai_material,
     const MaterialInternals & material_internals);

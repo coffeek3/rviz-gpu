@@ -29,8 +29,6 @@
 
 #include "pose_display_page_object.hpp"
 
-#include <QString>
-
 #include <memory>
 #include <vector>
 

@@ -32,6 +32,8 @@ Refer to the documentation of the relevant base class for a detailed API descrip
 ```
 * You need to link and compile against the `pluginlib` package. Further CMake options that might be relevant (see `rviz_default_plugins` CMakeLists):
 ```
+# prevent pluginlib from using boost
+target_compile_definitions(rviz_default_plugins PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 # Causes the visibility macros to use dllexport rather than dllimport (for Windows, when your plugin should be used as library)
 target_compile_definitions(rviz_default_plugins PRIVATE "RVIZ_DEFAULT_PLUGINS_BUILDING_LIBRARY")
 ```
@@ -41,7 +43,7 @@ target_compile_definitions(rviz_default_plugins PRIVATE "RVIZ_DEFAULT_PLUGINS_BU
 ```
 pluginlib_export_plugin_description_file(rviz_common plugins_description.xml)
 ```
-This should make sure that your plugins are found by rviz_common at runtime as described [here](https://docs.ros.org/en/foxy/Guides/Ament-CMake-Documentation.html).
+This should make sure that your plugins are found by rviz_common at runtime as described [here](https://index.ros.org/doc/ros2/Tutorials/Ament-CMake-Documentation/#id15)
 
 ### Writing a display plugin
 

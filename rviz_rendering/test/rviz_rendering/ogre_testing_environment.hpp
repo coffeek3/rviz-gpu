@@ -30,8 +30,6 @@
 #ifndef RVIZ_RENDERING__OGRE_TESTING_ENVIRONMENT_HPP_
 #define RVIZ_RENDERING__OGRE_TESTING_ENVIRONMENT_HPP_
 
-#include "./visibility_control.hpp"
-
 namespace rviz_rendering
 {
 class OgreTestingEnvironment
@@ -43,17 +41,9 @@ public:
    * @param: bool debug, if true, all logging of Ogre is send to std::out, if false no logging
    * occurs. Since the logging pollutes the test output, it defaults to false
    */
-  TEST_RVIZ_RENDERING_PUBLIC
   void setUpOgreTestEnvironment(bool debug = false);
 
-  TEST_RVIZ_RENDERING_PUBLIC
   void setUpRenderSystem();
-
-  TEST_RVIZ_RENDERING_PUBLIC
-  int getGlslVersion() const;
-
-  TEST_RVIZ_RENDERING_PUBLIC
-  ~OgreTestingEnvironment();
 };
 
 }  // namespace rviz_rendering

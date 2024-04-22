@@ -34,7 +34,7 @@
 
 #include <memory>
 
-#include <OgreVector.h>
+#include <OgreVector3.h>
 
 #include <QCursor>  // NOLINT(build/include_order)
 

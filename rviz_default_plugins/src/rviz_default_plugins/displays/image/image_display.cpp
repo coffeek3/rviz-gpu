@@ -102,7 +102,7 @@ ImageDisplay::ImageDisplay(std::unique_ptr<ROSImageTextureIface> texture)
 
 void ImageDisplay::onInitialize()
 {
-  ITDClass::onInitialize();
+  RosTopicDisplay::onInitialize();
 
   updateNormalizeOptions();
   setupScreenRectangle();
@@ -119,12 +119,12 @@ ImageDisplay::~ImageDisplay() = default;
 
 void ImageDisplay::onEnable()
 {
-  ITDClass::subscribe();
+  RosTopicDisplay::subscribe();
 }
 
 void ImageDisplay::onDisable()
 {
-  ITDClass::unsubscribe();
+  RosTopicDisplay::unsubscribe();
   clear();
 }
 
@@ -187,7 +187,7 @@ void ImageDisplay::update(float wall_dt, float ros_dt)
 
 void ImageDisplay::reset()
 {
-  ITDClass::reset();
+  RosTopicDisplay::reset();
   clear();
 }
 
@@ -226,7 +226,6 @@ void ImageDisplay::setupScreenRectangle()
     material_->getTechnique(0)->getPass(0)->createTextureUnitState();
   tu->setTextureName(texture_->getName());
   tu->setTextureFiltering(Ogre::TFO_NONE);
-  tu->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
 
   material_->setCullingMode(Ogre::CULL_NONE);
   Ogre::AxisAlignedBox aabInf;

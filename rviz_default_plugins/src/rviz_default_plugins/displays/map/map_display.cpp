@@ -137,22 +137,6 @@ MapDisplay::MapDisplay()
   transform_timestamp_property_ = new rviz_common::properties::BoolProperty(
     "Use Timestamp", false,
     "Use map header timestamp when transforming", this, SLOT(transformMap()));
-
-  binary_view_property_ = new rviz_common::properties::BoolProperty(
-    "Binary representation",
-    false,
-    "Represent the map value as either free or occupied, considering the user-defined threshold",
-    this,
-    SLOT(updatePalette()));
-
-  binary_threshold_property_ = new rviz_common::properties::IntProperty(
-    "Binary threshold",
-    100,
-    "Minimum value to mark cells as obstacle in the binary representation of the map",
-    this,
-    SLOT(updateBinaryThreshold()));
-  binary_threshold_property_->setMin(0);
-  binary_threshold_property_->setMax(100);
 }
 
 MapDisplay::~MapDisplay()
@@ -198,25 +182,13 @@ void MapDisplay::onInitialize()
       this->update_profile_ = profile;
       updateMapUpdateTopic();
     });
-  int threshold = binary_threshold_property_->getInt();
   // Order of palette textures here must match option indices for color_scheme_property_ above.
   palette_textures_.push_back(makePaletteTexture(makeMapPalette()));
-  palette_textures_binary_.push_back(makePaletteTexture(makeMapPalette(true, threshold)));
   color_scheme_transparency_.push_back(false);
   palette_textures_.push_back(makePaletteTexture(makeCostmapPalette()));
-  palette_textures_binary_.push_back(makePaletteTexture(makeCostmapPalette(true, threshold)));
   color_scheme_transparency_.push_back(true);
   palette_textures_.push_back(makePaletteTexture(makeRawPalette()));
-  palette_textures_binary_.push_back(makePaletteTexture(makeRawPalette(true, threshold)));
   color_scheme_transparency_.push_back(true);
-}
-
-void MapDisplay::updateBinaryThreshold()
-{
-  int threshold = binary_threshold_property_->getInt();
-  palette_textures_binary_[0] = makePaletteTexture(makeMapPalette(true, threshold));
-  palette_textures_binary_[1] = makePaletteTexture(makeCostmapPalette(true, threshold));
-  palette_textures_binary_[2] = makePaletteTexture(makeRawPalette(true, threshold));
 }
 
 void MapDisplay::updateTopic()
@@ -247,29 +219,13 @@ void MapDisplay::subscribe()
 void MapDisplay::subscribeToUpdateTopic()
 {
   try {
-    rclcpp::SubscriptionOptions sub_opts;
-    sub_opts.event_callbacks.message_lost_callback =
-      [&](rclcpp::QOSMessageLostInfo & info)
-      {
-        std::ostringstream sstm;
-        sstm << "Some messages were lost:\n>\tNumber of new lost messages: " <<
-          info.total_count_change << " \n>\tTotal number of messages lost: " <<
-          info.total_count;
-        setStatus(
-          rviz_common::properties::StatusProperty::Warn, "Update Topic",
-          QString(sstm.str().c_str()));
-      };
-
-    rclcpp::Node::SharedPtr node = rviz_ros_node_.lock()->get_raw_node();
     update_subscription_ =
-      node->
+      rviz_ros_node_.lock()->get_raw_node()->
       template create_subscription<map_msgs::msg::OccupancyGridUpdate>(
       update_topic_property_->getTopicStd(), update_profile_,
       [this](const map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr message) {
         incomingUpdate(message);
-      },
-      sub_opts);
-    subscription_start_time_ = node->now();
+      });
     setStatus(rviz_common::properties::StatusProperty::Ok, "Update Topic", "OK");
   } catch (rclcpp::exceptions::InvalidTopicNameError & e) {
     setStatus(
@@ -358,21 +314,10 @@ void MapDisplay::incomingUpdate(const map_msgs::msg::OccupancyGridUpdate::ConstS
   }
 
   ++update_messages_received_;
-  QString topic_str = QString::number(messages_received_) + " update messages received";
-  // Append topic subscription frequency if we can lock rviz_ros_node_.
-  std::shared_ptr<rviz_common::ros_integration::RosNodeAbstractionIface> node_interface =
-    rviz_ros_node_.lock();
-  if (node_interface != nullptr) {
-    const double duration =
-      (node_interface->get_raw_node()->now() - subscription_start_time_).seconds();
-    const double subscription_frequency =
-      static_cast<double>(messages_received_) / duration;
-    topic_str += " at " + QString::number(subscription_frequency, 'f', 1) + " hz.";
-  }
   setStatus(
     rviz_common::properties::StatusProperty::Ok,
     "Topic",
-    topic_str);
+    QString::number(update_messages_received_) + " update messages received");
 
   if (updateDataOutOfBounds(update)) {
     setStatus(
@@ -401,10 +346,9 @@ void MapDisplay::updateMapDataInMemory(
   const map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr update)
 {
   for (size_t y = 0; y < update->height; y++) {
-    auto offset = update->data.begin() + y * update->width;
     std::copy(
-      offset,
-      offset + update->width,
+      update->data.begin(),
+      update->data.begin() + update->width,
       current_map_.data.begin() + (update->y + y) * current_map_.info.width + update->x);
   }
 }
@@ -612,8 +556,6 @@ void MapDisplay::updateSwatches() const
 
 void MapDisplay::updatePalette()
 {
-  bool binary = binary_view_property_->getBool();
-
   int palette_index = color_scheme_property_->getOptionInt();
 
   for (const auto & swatch : swatches_) {
@@ -624,11 +566,7 @@ void MapDisplay::updatePalette()
     } else {
       palette_tex_unit = pass->createTextureUnitState();
     }
-    if (binary) {
-      palette_tex_unit->setTexture(palette_textures_binary_[palette_index]);
-    } else {
-      palette_tex_unit->setTexture(palette_textures_[palette_index]);
-    }
+    palette_tex_unit->setTexture(palette_textures_[palette_index]);
     palette_tex_unit->setTextureFiltering(Ogre::TFO_NONE);
   }
 
@@ -645,7 +583,7 @@ void MapDisplay::transformMap()
   rclcpp::Time transform_time = context_->getClock()->now();
 
   if (transform_timestamp_property_->getBool()) {
-    transform_time = rclcpp::Time(current_map_.header.stamp, RCL_ROS_TIME);
+    transform_time = current_map_.header.stamp;
   }
 
   Ogre::Vector3 position;

@@ -34,7 +34,7 @@
 #include <memory>
 #include <string>
 
-#include <OgreVector.h>
+#include <OgreVector3.h>
 
 #include "std_msgs/msg/string.hpp"
 
@@ -107,8 +107,6 @@ private Q_SLOTS:
   void updateAlpha();
   void updatePropertyVisibility();
   void updateRobotDescription();
-  void updateMassVisible();
-  void updateInertiaVisible();
 
   void updateTopic() override;
 
@@ -144,10 +142,6 @@ protected:
   rviz_common::properties::FilePickerProperty * description_file_property_;
   rviz_common::properties::FloatProperty * alpha_property_;
   rviz_common::properties::StringProperty * tf_prefix_property_;
-
-  rviz_common::properties::Property * mass_properties_;
-  rviz_common::properties::Property * mass_enabled_property_;
-  rviz_common::properties::Property * inertia_enabled_property_;
 
   std::unique_ptr<rviz_default_plugins::transformation::TransformerGuard<
       rviz_default_plugins::transformation::TFFrameTransformer>> transformer_guard_;

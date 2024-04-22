@@ -60,13 +60,13 @@ namespace interaction
 SelectionRenderer::SelectionRenderer(rviz_common::DisplayContext * context)
 : context_(context),
   camera_(nullptr),
-  camera_node_(nullptr)
+  scene_manager_(nullptr)
 {}
 
-void SelectionRenderer::initialize(Ogre::Camera * camera)
+void SelectionRenderer::initialize(Ogre::Camera * camera, Ogre::SceneManager * scene_manager)
 {
   camera_ = camera;
-  camera_node_ = camera_->getParentSceneNode();
+  scene_manager_ = scene_manager;
 
   fallback_pick_material_ = Ogre::MaterialManager::getSingleton().getByName(
     "rviz/DefaultPickAndDepth");
@@ -165,8 +165,8 @@ void SelectionRenderer::configureCamera(
 
   camera_->setCustomProjectionMatrix(true, scale_matrix * trans_matrix * proj_matrix);
 
-  camera_node_->setPosition(viewport->getCamera()->getDerivedPosition());
-  camera_node_->setOrientation(viewport->getCamera()->getDerivedOrientation());
+  camera_->setPosition(viewport->getCamera()->getDerivedPosition());
+  camera_->setOrientation(viewport->getCamera()->getDerivedOrientation());
 }
 
 float SelectionRenderer::getRelativeCoordinate(float coordinate, int dimension) const
@@ -301,10 +301,7 @@ Ogre::Technique * SelectionRenderer::handleSchemeNotFound(
   }
 
   // find out if the renderable has the picking param set
-  bool has_pick_param = false;
-  if (rend != nullptr) {
-    has_pick_param = rend->getUserObjectBindings().getUserAny("pick_handle").has_value();
-  }
+  bool has_pick_param = rend->getUserObjectBindings().getUserAny("pick_handle").has_value();
 
   // NOTE: it is important to avoid changing the culling mode of the
   // fallback techniques here, because that change then propagates to

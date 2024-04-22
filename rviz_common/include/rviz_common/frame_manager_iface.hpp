@@ -42,7 +42,7 @@
 #pragma clang diagnostic ignored "-Wkeyword-macro"
 #endif
 
-#include <OgreVector.h>
+#include <OgreVector3.h>
 #include <OgreQuaternion.h>
 
 #ifdef __clang__
@@ -130,7 +130,7 @@ public:
   rclcpp::Time
   getTime() = 0;
 
-  /// Return the pose for a header, relative to the fixed frame, in Ogre classes, at a given time.
+  /// Return the pose for a header, relative to the fixed frame, in Ogre classes.
   /**
    * \param[in] header The source of the frame name and time.
    * \param[out] position The position of the header frame relative to the
@@ -146,12 +146,10 @@ public:
     Ogre::Vector3 & position,
     Ogre::Quaternion & orientation)
   {
-    rclcpp::Time time_stamp(header.stamp, RCL_ROS_TIME);
-    return getTransform(header.frame_id, time_stamp, position, orientation);
+    return getTransform(header.frame_id, header.stamp, position, orientation);
   }
 
-  /// Return the pose for a frame relative to the fixed frame, in Ogre classes, at the most recent
-  /// time there is data for.
+  /// Return the pose for a frame relative to the fixed frame, in Ogre classes, at a given time.
   /**
    * \param[in] frame The frame to find the pose of.
    * \param[out] position The position of the frame relative to the fixed frame.
@@ -200,8 +198,7 @@ public:
     Ogre::Vector3 & position,
     Ogre::Quaternion & orientation)
   {
-    rclcpp::Time time_stamp(header.stamp, RCL_ROS_TIME);
-    return transform(header.frame_id, time_stamp, pose, position, orientation);   // NOLINT
+    return transform(header.frame_id, header.stamp, pose, position, orientation);   // NOLINT
     // linter wants #include <algorithm> for transform
   }
 
@@ -259,6 +256,31 @@ public:
   bool
   transformHasProblems(const std::string & frame, rclcpp::Time time, std::string & error) = 0;
 
+#if 0
+  /// Connect a tf::MessageFilter's callbacks to success and failure handler functions.
+  /**
+   * FrameManager has internal functions for handling success and
+   * failure of tf::MessageFilters which call Display::setStatus()
+   * based on success or failure of the filter, including appropriate
+   * error messages.
+   *
+   * \param filter The tf::MessageFilter to connect to.
+   * \param display The Display using the filter.
+   */
+  template<class M>
+  void
+  registerFilterForTransformStatusCheck(
+    tf2_ros::MessageFilter<M> * filter,
+    Display * display) override
+  {
+    filter->registerCallback(boost::bind(&FrameManager::messageCallback<M>, this, _1, display));
+    filter->registerFailureCallback(
+      boost::bind(
+        &FrameManager::failureCallback<M>, this, _1, _2,
+        display));
+  }
+#endif
+
   /// Return the current fixed frame name.
   virtual
   const std::string &
@@ -273,6 +295,27 @@ public:
   virtual
   std::shared_ptr<transformation::FrameTransformer>
   getTransformer() = 0;
+
+// TODO(wjwwood): figure out how to replace FilgerFailureReason here
+#if 0
+  /// Create a description of a transform problem.
+  /**
+   * \param frame_id The name of the frame with issues.
+   * \param stamp The time for which the problem was detected.
+   * \param caller_id Dummy parameter, not used.
+   * \param reason The reason given by the tf::MessageFilter in its failure callback.
+   * \return An error message describing the problem.
+   *
+   * Once a problem has been detected with a given frame or transform,
+   * call this to get an error message describing the problem. */
+  virtual
+  std::string
+  discoverFailureReason(
+    const std::string & frame_id,
+    const rclcpp::Time & stamp,
+    const std::string & caller_id,
+    tf::FilterFailureReason reason) = 0;
+#endif
 
   virtual
   std::vector<std::string>

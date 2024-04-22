@@ -35,8 +35,6 @@
 
 #include <OgreSceneNode.h>
 
-#include "rclcpp/clock.hpp"
-
 void DisplayTestFixture::SetUpTestCase()
 {
   testing_environment_ = std::make_shared<rviz_default_plugins::OgreTestingEnvironment>();

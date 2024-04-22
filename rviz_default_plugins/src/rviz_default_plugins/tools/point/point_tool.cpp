@@ -32,7 +32,7 @@
 
 #include <sstream>
 
-#include <OgreVector.h>
+#include <OgreVector3.h>
 
 #include "rclcpp/qos.hpp"
 

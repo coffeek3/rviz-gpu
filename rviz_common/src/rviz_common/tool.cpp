@@ -141,8 +141,6 @@ void Tool::setName(const QString & name)
 {
   name_ = name;
   property_container_->setName(name_);
-
-  Q_EMIT nameChanged(name_);
 }
 
 void Tool::setDescription(const QString & description)

@@ -39,7 +39,7 @@
 
 #include <OgreTexture.h>
 #include <OgreMaterial.h>
-#include <OgreVector.h>
+#include <OgreVector3.h>
 #include <OgreSharedPtr.h>
 
 #endif  // Q_MOC_RUN
@@ -120,7 +120,6 @@ protected Q_SLOTS:
   void updateAlpha();
   void updateDrawUnder() const;
   void updatePalette();
-  void updateBinaryThreshold();
   /** @brief Show current_map_ in the scene. */
   void transformMap();
   void updateMapUpdateTopic();
@@ -162,7 +161,7 @@ protected:
   void updateSwatches() const;
 
   std::vector<std::shared_ptr<Swatch>> swatches_;
-  std::vector<Ogre::TexturePtr> palette_textures_, palette_textures_binary_;
+  std::vector<Ogre::TexturePtr> palette_textures_;
   std::vector<bool> color_scheme_transparency_;
   bool loaded_;
 
@@ -174,7 +173,6 @@ protected:
 
   rclcpp::Subscription<map_msgs::msg::OccupancyGridUpdate>::SharedPtr update_subscription_;
   rclcpp::QoS update_profile_;
-  rclcpp::Time subscription_start_time_;
 
   rviz_common::properties::RosTopicProperty * update_topic_property_;
   rviz_common::properties::QosProfileProperty * update_profile_property_;
@@ -187,8 +185,6 @@ protected:
   rviz_common::properties::Property * draw_under_property_;
   rviz_common::properties::EnumProperty * color_scheme_property_;
   rviz_common::properties::BoolProperty * transform_timestamp_property_;
-  rviz_common::properties::BoolProperty * binary_view_property_;
-  rviz_common::properties::IntProperty * binary_threshold_property_;
 
   uint32_t update_messages_received_;
 };

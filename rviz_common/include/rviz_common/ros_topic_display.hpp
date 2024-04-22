@@ -33,7 +33,6 @@
 #ifndef Q_MOC_RUN
 
 #include <memory>
-#include <sstream>
 #include <string>
 
 #include <OgreSceneNode.h>
@@ -52,12 +51,6 @@
 #include "rviz_common/ros_integration/ros_node_abstraction_iface.hpp"
 #include "rviz_common/visibility_control.hpp"
 
-// Required, in combination with
-// `qRegisterMetaType<std::shared_ptr<const void>>` so that this
-// type can be queued by Qt slots.
-// See: http://doc.qt.io/qt-5/qmetatype.html#qRegisterMetaType-1
-Q_DECLARE_METATYPE(std::shared_ptr<const void>)
-
 namespace rviz_common
 {
 
@@ -73,8 +66,6 @@ public:
   : rviz_ros_node_(),
     qos_profile(5)
   {
-    qRegisterMetaType<std::shared_ptr<const void>>();
-
     topic_property_ = new properties::RosTopicProperty(
       "Topic", "",
       "", "", this, SLOT(updateTopic()));
@@ -101,31 +92,10 @@ public:
         this->qos_profile = profile;
         updateTopic();
       });
-
-    // Useful to _ROSTopicDisplay subclasses to ensure GUI updates
-    // are performed by the main thread only.
-    connect(
-      this,
-      SIGNAL(typeErasedMessageTaken(std::shared_ptr<const void>)),
-      this,
-      SLOT(processTypeErasedMessage(std::shared_ptr<const void>)),
-      // Force queued connections regardless of QObject thread affinity
-      Qt::QueuedConnection);
   }
-
-Q_SIGNALS:
-  void typeErasedMessageTaken(std::shared_ptr<const void> type_erased_message);
 
 protected Q_SLOTS:
-  virtual void processTypeErasedMessage(std::shared_ptr<const void> type_erased_message)
-  {
-    (void)type_erased_message;
-  }
-
   virtual void transformerChangedCallback()
-  {
-  }
-  virtual void updateMessageQueueSize()
   {
   }
   virtual void updateTopic() = 0;
@@ -157,7 +127,10 @@ public:
   RosTopicDisplay()
   : messages_received_(0)
   {
-    QString message_type = QString::fromStdString(rosidl_generator_traits::name<MessageType>());
+    // TODO(Martin-Idel-SI): We need a way to extract the MessageType from the template to set a
+    // correct string. Previously was:
+    // QString message_type = QString::fromStdString(ros::message_traits::datatype<MessageType>());
+    QString message_type = QString::fromStdString("");
     topic_property_->setMessageType(message_type);
     topic_property_->setDescription(message_type + " topic to subscribe to.");
   }
@@ -203,26 +176,12 @@ protected:
     }
 
     try {
-      rclcpp::SubscriptionOptions sub_opts;
-      sub_opts.event_callbacks.message_lost_callback =
-        [&](rclcpp::QOSMessageLostInfo & info)
-        {
-          std::ostringstream sstm;
-          sstm << "Some messages were lost:\n>\tNumber of new lost messages: " <<
-            info.total_count_change << " \n>\tTotal number of messages lost: " <<
-            info.total_count;
-          setStatus(properties::StatusProperty::Warn, "Topic", QString(sstm.str().c_str()));
-        };
-
       // TODO(anhosi,wjwwood): replace with abstraction for subscriptions once available
-      rclcpp::Node::SharedPtr node = rviz_ros_node_.lock()->get_raw_node();
       subscription_ =
-        node->template create_subscription<MessageType>(
+        rviz_ros_node_.lock()->get_raw_node()->template create_subscription<MessageType>(
         topic_property_->getTopicStd(),
         qos_profile,
-        [this](const typename MessageType::ConstSharedPtr message) {incomingMessage(message);},
-        sub_opts);
-      subscription_start_time_ = node->now();
+        [this](const typename MessageType::ConstSharedPtr message) {incomingMessage(message);});
       setStatus(properties::StatusProperty::Ok, "Topic", "OK");
     } catch (rclcpp::exceptions::InvalidTopicNameError & e) {
       setStatus(
@@ -262,21 +221,10 @@ protected:
     }
 
     ++messages_received_;
-    QString topic_str = QString::number(messages_received_) + " messages received";
-    // Append topic subscription frequency if we can lock rviz_ros_node_.
-    std::shared_ptr<ros_integration::RosNodeAbstractionIface> node_interface =
-      rviz_ros_node_.lock();
-    if (node_interface != nullptr) {
-      const double duration =
-        (node_interface->get_raw_node()->now() - subscription_start_time_).seconds();
-      const double subscription_frequency =
-        static_cast<double>(messages_received_) / duration;
-      topic_str += " at " + QString::number(subscription_frequency, 'f', 1) + " hz.";
-    }
     setStatus(
       properties::StatusProperty::Ok,
       "Topic",
-      topic_str);
+      QString::number(messages_received_) + " messages received");
 
     processMessage(msg);
   }
@@ -287,7 +235,6 @@ protected:
   virtual void processMessage(typename MessageType::ConstSharedPtr msg) = 0;
 
   typename rclcpp::Subscription<MessageType>::SharedPtr subscription_;
-  rclcpp::Time subscription_start_time_;
   uint32_t messages_received_;
 };
 

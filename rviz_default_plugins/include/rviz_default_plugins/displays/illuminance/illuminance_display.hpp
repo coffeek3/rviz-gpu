@@ -56,10 +56,9 @@ public:
   IlluminanceDisplay();
   ~IlluminanceDisplay() override;
 
-protected:
+private:
   void processMessage(const sensor_msgs::msg::Illuminance::ConstSharedPtr message) override;
 
-private:
   void setInitialValues() override;
   void hideUnneededProperties() override;
 };

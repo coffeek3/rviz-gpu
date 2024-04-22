@@ -51,12 +51,16 @@
 class DisplayContextFixture : public testing::Test
 {
 public:
-  void SetUp();
+  static void SetUpTestCase();
 
   DisplayContextFixture();
 
-  std::shared_ptr<rviz_common::OgreTestingEnvironment> testing_environment_;
-  Ogre::SceneManager * scene_manager_;
+  ~DisplayContextFixture();
+
+  static void TearDownTestCase();
+
+  static std::shared_ptr<rviz_common::OgreTestingEnvironment> testing_environment_;
+  static Ogre::SceneManager * scene_manager_;
 
   std::shared_ptr<MockDisplayContext> context_;
   std::shared_ptr<MockWindowManagerInterface> window_manager_;

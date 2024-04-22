@@ -40,7 +40,7 @@
 #include <OgreRoot.h>
 #include <OgreSceneNode.h>
 
-#include "resource_retriever/retriever.hpp"
+#include "resource_retriever/retriever.h"
 
 #include "rviz_common/properties/property.hpp"
 #include "rviz_rendering/material_manager.hpp"

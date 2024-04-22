@@ -2,181 +2,34 @@
 Changelog for package rviz_ogre_vendor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-14.1.0 (2024-04-16)
--------------------
-
-14.0.0 (2024-04-07)
--------------------
-
-13.4.2 (2024-03-27)
--------------------
-
-13.4.1 (2024-03-26)
--------------------
-
-13.4.0 (2024-03-09)
--------------------
-* Change an rviz_ogre_vendor dependency to libfreetype-dev. (`#1167 <https://github.com/ros2/rviz/issues/1167>`_)
-  The situation is complicated, but in versions of Ubuntu
-  prior to Focal and versions of Debian prior to Bookworm,
-  the name of the library was 'libfreetype6-dev'.  Since
-  Focal and Bookworm, the name of the library is 'libfreetype-dev'.
-  While 'libfreetype-dev' provides a "virtual package"
-  for 'libfreetype6-dev', we should really use the new canonical
-  name.
-  Further, there is currently a bug on ros_buildfarm where
-  it doesn't properly deal with "virtual packages" like this.
-  This is currently preventing this package from building on
-  Ubuntu Noble.  That bug is being worked on separately.
-  Finally, I'll note that we already have a libfreetype-dev
-  key in rosdep, so we just switch to using that here which
-  should work around the bug on the buildfarm, and also use
-  the correct canonical name going forward.
-* fix: modify typo in cmake args for mac (`#1160 <https://github.com/ros2/rviz/issues/1160>`_)
-* feat: support macos (`#1156 <https://github.com/ros2/rviz/issues/1156>`_)
-* Contributors: Chris Lalancette, Daisuke Nishimatsu
-
-13.3.1 (2024-01-24)
--------------------
-
-13.3.0 (2023-12-26)
--------------------
-* Suppress a couple more of clang warnings in rviz_ogre_vendor. (`#1102 <https://github.com/ros2/rviz/issues/1102>`_)
-* Contributors: Chris Lalancette
-
-13.2.0 (2023-11-06)
--------------------
-
-13.1.2 (2023-10-09)
--------------------
-
-13.1.1 (2023-10-04)
--------------------
-
-13.1.0 (2023-09-07)
--------------------
-
-13.0.0 (2023-08-21)
--------------------
-
-12.8.0 (2023-08-27)
--------------------
-
-12.7.0 (2023-07-11)
--------------------
-* Fix the vendoring flags for clang compilation. (`#1003 <https://github.com/ros2/rviz/issues/1003>`_)
-  Several of the flags are not available on clang, so
-  don't add them there.  This fixes the clang build for
-  me locally.
-* Switch to ament_cmake_vendor_package (`#995 <https://github.com/ros2/rviz/issues/995>`_)
-* Contributors: Chris Lalancette, Scott K Logan
-
-12.6.1 (2023-06-12)
--------------------
-
-12.6.0 (2023-06-07)
--------------------
-* CMake: rename FeatureSummary.cmake to avoid name clashes (`#953 <https://github.com/ros2/rviz/issues/953>`_)
-* FIX CVE in external libraries (`#961 <https://github.com/ros2/rviz/issues/961>`_)
-* Contributors: Gökçe Aydos, mosfet80
-
-12.5.1 (2023-05-11)
--------------------
-
-12.5.0 (2023-04-28)
--------------------
-
-12.4.0 (2023-04-18)
--------------------
-
-12.3.2 (2023-04-11)
--------------------
-* Fix build failures on macOS + Apple Silicon (`#944 <https://github.com/ros2/rviz/issues/944>`_)
-* Contributors: Yadu
-
-12.3.1 (2023-03-01)
--------------------
-
-12.3.0 (2023-02-14)
--------------------
-* [rolling] Update maintainers - 2022-11-07 (`#923 <https://github.com/ros2/rviz/issues/923>`_)
-* Contributors: Audrow Nash
-
-12.2.0 (2022-11-07)
--------------------
-* Remove broken rviz_ogre_vendor::RenderSystem_GL target (`#920 <https://github.com/ros2/rviz/issues/920>`_)
-* Contributors: Shane Loretz
-
-12.1.0 (2022-11-02)
--------------------
-
-12.0.0 (2022-09-13)
--------------------
-* Fixes policy CMP0135 warning for CMake >= 3.24 (`#898 <https://github.com/ros2/rviz/issues/898>`_)
-* Ogre 1.12.10 upgrade (`#878 <https://github.com/ros2/rviz/issues/878>`_)
-* Make resource file paths relative (`#862 <https://github.com/ros2/rviz/issues/862>`_)
-* Use CMAKE_STAGING_PREFIX for staging OGRE installation (`#861 <https://github.com/ros2/rviz/issues/861>`_)
-* Contributors: Cristóbal Arroyo, Kenji Brameld, Scott K Logan
-
-11.3.0 (2022-04-26)
--------------------
-
-11.2.0 (2022-04-08)
--------------------
-
-11.1.1 (2022-03-30)
--------------------
-* Fix interface link libraries in ogre vendor (`#761 <https://github.com/ros2/rviz/issues/761>`_)
-* Contributors: Laszlo Turanyi
-
-11.1.0 (2022-03-24)
--------------------
-
-11.0.0 (2022-03-01)
--------------------
-
-10.0.0 (2022-02-16)
--------------------
-* Fix the build for Ubuntu Jammy arm64. (`#828 <https://github.com/ros2/rviz/issues/828>`_)
-* Contributors: Chris Lalancette
-
-9.1.1 (2022-01-25)
+8.2.8 (2023-03-16)
 ------------------
 
-9.1.0 (2022-01-13)
+8.2.7 (2022-09-12)
+------------------
+* Fix interface link libraries in ogre vendor (`#761 <https://github.com/ros2/rviz/issues/761>`_) (`#880 <https://github.com/ros2/rviz/issues/880>`_)
+* Contributors: Jacob Perron, Laszlo Turanyi
+
+8.2.6 (2022-02-04)
 ------------------
 
-9.0.1 (2021-12-17)
+8.2.5 (2021-10-12)
 ------------------
 
-9.0.0 (2021-11-18)
+8.2.4 (2021-10-05)
 ------------------
 
-8.7.0 (2021-08-11)
+8.2.3 (2021-09-01)
 ------------------
 
-8.6.0 (2021-05-13)
-------------------
-* Strip RPATH from installed Ogre binaries (`#688 <https://github.com/ros2/rviz/issues/688>`_)
-* Contributors: Michel Hidalgo
-
-8.5.0 (2021-04-06)
+8.2.2 (2021-06-18)
 ------------------
 
-8.4.0 (2021-03-18)
+8.2.1 (2020-12-09)
 ------------------
-* Always preserve source permissions in vendor packages (`#647 <https://github.com/ros2/rviz/issues/647>`_)
-* Contributors: Scott K Logan
-
-8.3.1 (2021-01-25)
-------------------
-
-8.3.0 (2020-12-08)
-------------------
-* Add linters and use ament_lint_auto (`#608 <https://github.com/ros2/rviz/issues/608>`_)
-* Update maintainers (`#607 <https://github.com/ros2/rviz/issues/607>`_)
-* Pass through CMAKE\_{C,CXX}_FLAGS to OGRE build (`#587 <https://github.com/ros2/rviz/issues/587>`_)
-* Contributors: Jacob Perron, Scott K Logan
+* Update maintainer list (`#619 <https://github.com/ros2/rviz/issues/619>`_)
+* changelogs
+* Contributors: Michael Jeronimo, William Woodall
 
 8.2.0 (2020-06-23)
 ------------------

@@ -35,7 +35,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/clock.hpp"
 #include "std_msgs/msg/header.hpp"
-#include "geometry_msgs/msg/pose.hpp"
 #include "geometry_msgs/msg/pose_array.hpp"
 
 using namespace std::chrono_literals;  // NOLINT

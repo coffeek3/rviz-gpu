@@ -49,7 +49,6 @@
 #include "rviz_common/properties/string_property.hpp"
 
 #include "rviz_default_plugins/robot/robot.hpp"
-#include "rviz_default_plugins/robot/robot_link.hpp"
 #include "rviz_default_plugins/robot/tf_link_updater.hpp"
 
 namespace rviz_default_plugins
@@ -94,17 +93,6 @@ RobotModelDisplay::RobotModelDisplay()
     "Collision Enabled", false,
     "Whether to display the collision representation of the robot.",
     this, SLOT(updateCollisionVisible()));
-
-  mass_properties_ = new Property("Mass Properties", QVariant(), "", this);
-  mass_enabled_property_ = new Property(
-    "Mass", false,
-    "Whether to display the visual representation of the mass of each link.",
-    mass_properties_, SLOT(updateMassVisible()), this);
-  inertia_enabled_property_ = new Property(
-    "Inertia", false,
-    "Whether to display the visual representation of the inertia of each link.",
-    mass_properties_, SLOT(updateInertiaVisible()), this);
-  mass_properties_->collapse();
 
   update_rate_property_ = new FloatProperty(
     "Update Interval", 0,
@@ -214,18 +202,6 @@ void RobotModelDisplay::updateTfPrefix()
   context_->queueRender();
 }
 
-void RobotModelDisplay::updateMassVisible()
-{
-  robot_->setMassVisible(mass_enabled_property_->getValue().toBool());
-  context_->queueRender();
-}
-
-void RobotModelDisplay::updateInertiaVisible()
-{
-  robot_->setInertiaVisible(inertia_enabled_property_->getValue().toBool());
-  context_->queueRender();
-}
-
 void RobotModelDisplay::load_urdf()
 {
   if (!transformer_guard_->checkTransformer()) {
@@ -281,18 +257,6 @@ void RobotModelDisplay::display_urdf_content()
 
   setStatus(StatusProperty::Ok, "URDF", "URDF parsed OK");
   robot_->load(descr);
-  std::stringstream ss;
-  for (const auto & name_link_pair : robot_->getLinks()) {
-    const std::string err = name_link_pair.second->getGeometryErrors();
-    if (!err.empty()) {
-      ss << "\n• for link '" << name_link_pair.first << "':\n" << err;
-    }
-  }
-  if (ss.tellp()) {
-    setStatus(
-      StatusProperty::Error, "URDF",
-      QString("Errors loading geometries:").append(ss.str().c_str()));
-  }
   updateRobot();
 }
 

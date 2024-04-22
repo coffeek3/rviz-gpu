@@ -37,7 +37,7 @@
 
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
-#include <OgreVector.h>
+#include <OgreVector3.h>
 #include <OgreQuaternion.h>
 #include <OgreManualObject.h>
 #include <OgreMaterialManager.h>
@@ -555,6 +555,7 @@ uint32_t PointCloud::getColorForPoint(
   std::vector<PointCloud::Point>::iterator point) const
 {
   uint32_t color;
+  auto root = Ogre::Root::getSingletonPtr();
 
   if (color_by_index_) {
     // convert to ColourValue, so we can then convert to the rendersystem-specific color type
@@ -564,9 +565,9 @@ uint32_t PointCloud::getColorForPoint(
     c.r = ((color >> 16) & 0xff) / 255.0f;
     c.g = ((color >> 8) & 0xff) / 255.0f;
     c.b = (color & 0xff) / 255.0f;
-    color = c.getAsBYTE();
+    root->convertColourValue(c, &color);
   } else {
-    color = point->color.getAsBYTE();
+    root->convertColourValue(point->color, &color);
   }
   return color;
 }
@@ -598,16 +599,13 @@ PointCloud::addPointToHardwareBuffer(
     auto iptr = reinterpret_cast<uint32_t *>(float_buffer);
     *iptr = color;
     ++float_buffer;
-  }
-#ifndef NDEBUG
-  size_t num_vertices = internals.rend->getBuffer()->getNumVertices();
-  size_t vertex_size =
-    internals.rend->getRenderOperation()->vertexData->vertexDeclaration->getVertexSize(0);
-  assert(
-    reinterpret_cast<uint8_t *>(float_buffer) <=
-    reinterpret_cast<uint8_t *>(internals.float_buffer) + num_vertices * vertex_size);
-#endif
 
+    assert(
+      reinterpret_cast<uint8_t *>(float_buffer) <=
+      reinterpret_cast<uint8_t *>(float_buffer) +
+      internals.rend->getBuffer()->getNumVertices() *
+      internals.rend->getRenderOperation()->vertexData->vertexDeclaration->getVertexSize(0));
+  }
   internals.float_buffer = float_buffer;
   return internals;
 }

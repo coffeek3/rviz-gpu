@@ -2,144 +2,42 @@
 Changelog for package rviz_rendering_tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-14.1.0 (2024-04-16)
--------------------
+8.2.8 (2023-03-16)
+------------------
+* add test to ensure binary STL files from SOLIDWORKS get imported without a warning (`#917 <https://github.com/ros2/rviz/issues/917>`_) (`#933 <https://github.com/ros2/rviz/issues/933>`_)
+* Contributors: mergify[bot]
 
-14.0.0 (2024-04-07)
--------------------
-
-13.4.2 (2024-03-27)
--------------------
-
-13.4.1 (2024-03-26)
--------------------
-
-13.4.0 (2024-03-09)
--------------------
-
-13.3.1 (2024-01-24)
--------------------
-* Remove the loading_ascii_stl_files_fail (`#1125 <https://github.com/ros2/rviz/issues/1125>`_)
-* Contributors: Chris Lalancette
-
-13.3.0 (2023-12-26)
--------------------
-* Update rviz_rendering and rviz_rendering_tests to C++17. (`#1096 <https://github.com/ros2/rviz/issues/1096>`_)
-* Contributors: Chris Lalancette
-
-13.2.0 (2023-11-06)
--------------------
-* Use assimp to load stl (`#1063 <https://github.com/ros2/rviz/issues/1063>`_)
-* Contributors: Alejandro Hernández Cordero
-
-13.1.2 (2023-10-09)
--------------------
-
-13.1.1 (2023-10-04)
--------------------
-
-13.1.0 (2023-09-07)
--------------------
-
-13.0.0 (2023-08-21)
--------------------
-
-12.8.0 (2023-08-27)
--------------------
-
-12.7.0 (2023-07-11)
--------------------
-
-12.6.1 (2023-06-12)
--------------------
-
-12.6.0 (2023-06-07)
--------------------
-
-12.5.1 (2023-05-11)
--------------------
-
-12.5.0 (2023-04-28)
--------------------
-
-12.4.0 (2023-04-18)
--------------------
-
-12.3.2 (2023-04-11)
--------------------
-
-12.3.1 (2023-03-01)
--------------------
-
-12.3.0 (2023-02-14)
--------------------
-* [rolling] Update maintainers - 2022-11-07 (`#923 <https://github.com/ros2/rviz/issues/923>`_)
-* Contributors: Audrow Nash
-
-12.2.0 (2022-11-07)
--------------------
-* add test to ensure binary STL files from SOLIDWORKS get imported without a warning (`#917 <https://github.com/ros2/rviz/issues/917>`_)
-* Contributors: Kenji Brameld
-
-12.1.0 (2022-11-02)
--------------------
-
-12.0.0 (2022-09-13)
--------------------
-
-11.3.0 (2022-04-26)
--------------------
-
-11.2.0 (2022-04-08)
--------------------
-
-11.1.1 (2022-03-30)
--------------------
-
-11.1.0 (2022-03-24)
--------------------
-
-11.0.0 (2022-03-01)
--------------------
-
-10.0.0 (2022-02-16)
--------------------
-
-9.1.1 (2022-01-25)
+8.2.7 (2022-09-12)
 ------------------
 
-9.1.0 (2022-01-13)
+8.2.6 (2022-02-04)
 ------------------
 
-9.0.1 (2021-12-17)
+8.2.5 (2021-10-12)
 ------------------
 
-9.0.0 (2021-11-18)
+8.2.4 (2021-10-05)
 ------------------
 
-8.7.0 (2021-08-11)
-------------------
-* Removed some memory leaks in rviz_rendering and rviz_rendering_tests (`#710 <https://github.com/ros2/rviz/issues/710>`_)
-* Contributors: Alejandro Hernández Cordero
-
-8.6.0 (2021-05-13)
+8.2.3 (2021-09-01)
 ------------------
 
-8.5.0 (2021-04-06)
+8.2.2 (2021-06-18)
 ------------------
 
-8.4.0 (2021-03-18)
+8.2.1 (2020-12-09)
 ------------------
-
-8.3.1 (2021-01-25)
-------------------
-
-8.3.0 (2020-12-08)
-------------------
-* Add linters and use ament_lint_auto (`#608 <https://github.com/ros2/rviz/issues/608>`_)
-* Update maintainers (`#607 <https://github.com/ros2/rviz/issues/607>`_)
-* Use retriever.hpp (`#589 <https://github.com/ros2/rviz/issues/589>`_)
-* Contributors: Jacob Perron, Shane Loretz
+* Update maintainer list (`#619 <https://github.com/ros2/rviz/issues/619>`_)
+* [foxy-backport] fast forward of ros2 (default) to foxy (`#570 <https://github.com/ros2/rviz/issues/570>`_)
+  * restore compatibility with older Qt versions (`#561 <https://github.com/ros2/rviz/issues/561>`_)
+  * Suppress warnings when building with older Qt versions. (`#562 <https://github.com/ros2/rviz/issues/562>`_)
+  * Don't try to moc generate env_config.hpp file. (`#550 <https://github.com/ros2/rviz/issues/550>`_)
+  This removes one more warning from rviz_common builds.
+  * rewrite hack to avoid CMake warning with assimp 5.0.1 and older, apply cross platform (`#565 <https://github.com/ros2/rviz/issues/565>`_)
+  * Use dedicated TransformListener thread (`#551 <https://github.com/ros2/rviz/issues/551>`_)
+  * restore alphabetical include order (`#563 <https://github.com/ros2/rviz/issues/563>`_)
+  * Don't install test header files in rviz_rendering. (`#564 <https://github.com/ros2/rviz/issues/564>`_)
+* Contributors: Michael Jeronimo, William Woodall, Dirk Thomas, Chris Lalancette, ymd-stella, Karsten Knese
 
 8.2.0 (2020-06-23)
 ------------------

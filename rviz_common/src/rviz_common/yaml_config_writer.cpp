@@ -28,10 +28,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz_common/yaml_config_writer.hpp"
+#include "./yaml_config_writer.hpp"
 
 #include <fstream>
 
+#ifdef _WIN32
+#define YAML_CPP_DLL
+#endif
 #include "yaml-cpp/emitter.h"
 
 namespace rviz_common

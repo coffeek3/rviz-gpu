@@ -84,22 +84,13 @@ std::vector<unsigned char> PaletteBuilder::buildPalette()
   return palette_;
 }
 
-std::vector<unsigned char> makeMapPalette(bool binary, int threshold)
+std::vector<unsigned char> makeMapPalette()
 {
   auto palette_builder = std::make_shared<PaletteBuilder>();
-  if (binary) {
-    for (unsigned char i = 0; i < threshold; i++) {
-      palette_builder->setColorForValue(i, 255, 255, 255, 255);
-    }
-    for (unsigned char i = threshold; i <= 100; i++) {
-      palette_builder->setColorForValue(i, 0, 0, 0, 255);
-    }
-  } else {
-    for (unsigned char i = 0; i <= 100; i++) {
-      // Standard gray map palette values
-      unsigned char v = 255 - (255 * i) / 100;
-      palette_builder->setColorForValue(i, v, v, v, 255);
-    }
+  for (unsigned char i = 0; i <= 100; i++) {
+    // Standard gray map palette values
+    unsigned char v = 255 - (255 * i) / 100;
+    palette_builder->setColorForValue(i, v, v, v, 255);
   }
   return palette_builder->setColorForIllegalPositiveValues(0, 255, 0)
          ->setRedYellowColorsForIllegalNegativeValues()
@@ -107,25 +98,16 @@ std::vector<unsigned char> makeMapPalette(bool binary, int threshold)
          ->buildPalette();
 }
 
-std::vector<unsigned char> makeCostmapPalette(bool binary, int threshold)
+std::vector<unsigned char> makeCostmapPalette()
 {
   auto palette_builder = std::make_shared<PaletteBuilder>();
-  if (binary) {
-    for (unsigned char i = 0; i < threshold; i++) {
-      palette_builder->setColorForValue(i, 0, 0, 255, 255);
-    }
-    for (unsigned char i = threshold; i <= 100; i++) {
-      palette_builder->setColorForValue(i, 255, 0, 0, 255);
-    }
-  } else {
-    palette_builder->setColorForValue(0, 0, 0, 0, 0);
-    for (unsigned char i = 1; i <= 98; i++) {
-      unsigned char v = (255 * i) / 100;
-      palette_builder->setColorForValue(i, v, 0, 255 - v, 255);
-    }
-    palette_builder->setColorForValue(99, 0, 255, 255, 255);  // obstacle values in cyan
-    palette_builder->setColorForValue(100, 255, 0, 255, 255);  // lethal obstacle values in purple
+  palette_builder->setColorForValue(0, 0, 0, 0, 0);
+  for (unsigned char i = 1; i <= 98; i++) {
+    unsigned char v = (255 * i) / 100;
+    palette_builder->setColorForValue(i, v, 0, 255 - v, 255);
   }
+  palette_builder->setColorForValue(99, 0, 255, 255, 255);  // obstacle values in cyan
+  palette_builder->setColorForValue(100, 255, 0, 255, 255);  // lethal obstacle values in purple
 
   return palette_builder->setColorForIllegalPositiveValues(0, 255, 0)
          ->setRedYellowColorsForIllegalNegativeValues()
@@ -133,20 +115,11 @@ std::vector<unsigned char> makeCostmapPalette(bool binary, int threshold)
          ->buildPalette();
 }
 
-std::vector<unsigned char> makeRawPalette(bool binary, int threshold)
+std::vector<unsigned char> makeRawPalette()
 {
   auto palette_builder = std::make_shared<PaletteBuilder>();
-  if (binary) {
-    for (unsigned char i = 0; i < threshold; i++) {
-      palette_builder->setColorForValue(i, 0, 0, 0, 255);
-    }
-    for (int i = threshold; i < 256; i++) {
-      palette_builder->setColorForValue(i, 255, 255, 255, 255);
-    }
-  } else {
-    for (int i = 0; i < 256; i++) {
-      palette_builder->setColorForValue(i, i, i, i, 255);
-    }
+  for (int i = 0; i < 256; i++) {
+    palette_builder->setColorForValue(i, i, i, i, 255);
   }
   return palette_builder->buildPalette();
 }

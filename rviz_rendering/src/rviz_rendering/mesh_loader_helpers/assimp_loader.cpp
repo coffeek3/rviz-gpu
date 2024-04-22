@@ -82,7 +82,7 @@ public:
     memcpy(buffer, pos_, to_read);
     pos_ += to_read;
 
-    return to_read / size;
+    return to_read;
   }
 
   size_t Write(const void * buffer, size_t size, size_t count) override
@@ -136,9 +136,19 @@ private:
   uint8_t * pos_;
 };
 
-class ResourceIOSystem final : public Assimp::IOSystem
+class ResourceIOSystem : public Assimp::IOSystem
 {
 public:
+  struct RetrieverResult
+  {
+    RetrieverResult(bool resource_exists, Assimp::IOStream * resource_io_stream)
+    : resource_exists_(resource_exists),
+      resource_io_stream_(resource_io_stream) {}
+
+    bool resource_exists_;
+    Assimp::IOStream * resource_io_stream_;
+  };
+
   ResourceIOSystem() = default;
 
   ~ResourceIOSystem() override = default;
@@ -152,18 +162,16 @@ public:
   // Check whether a specific file exists
   bool Exists(const char * file) const override
   {
-    try {
-      resource_retriever::MemoryResource res = retriever_.get(file);
-    } catch (const resource_retriever::Exception & e) {
-      (void) e;  // do nothing on exception
-      return false;
-    }
-
-    return true;
+    return checkExistsAndOpen(file).resource_exists_;
   }
 
   // ... and finally a method to open a custom stream
   Assimp::IOStream * Open(const char * file, const char * mode = "rb") override
+  {
+    return checkExistsAndOpen(file, mode).resource_io_stream_;
+  }
+
+  RetrieverResult checkExistsAndOpen(const char * file, const char * mode = "rb") const
   {
     (void) mode;
     assert(mode == std::string("r") || mode == std::string("rb"));
@@ -171,13 +179,12 @@ public:
     resource_retriever::MemoryResource res;
     try {
       res = retriever_.get(file);
-    } catch (const resource_retriever::Exception & e) {
+    } catch (resource_retriever::Exception & e) {
       (void) e;  // do nothing on exception
-      return nullptr;
+      return RetrieverResult(false, nullptr);
     }
 
-    // This will get freed when 'Close' is called
-    return new ResourceIOStream(res);
+    return RetrieverResult(true, new ResourceIOStream(res));
   }
 
   void Close(Assimp::IOStream * stream) override
@@ -262,7 +269,7 @@ std::vector<Ogre::MaterialPtr> AssimpLoader::loadMaterials(
       Ogre::ColourValue(0, 0, 0, 1.0));
 
 
-    setLightColorsFromAssimp(resource_path, mat, ai_material, material_internals, scene);
+    setLightColorsFromAssimp(resource_path, mat, ai_material, material_internals);
 
     setBlending(mat, ai_material, material_internals);
 
@@ -278,8 +285,7 @@ void AssimpLoader::setLightColorsFromAssimp(
   const std::string & resource_path,
   Ogre::MaterialPtr & mat,
   const aiMaterial * ai_material,
-  MaterialInternals & material_internals,
-  const aiScene * ai_scene)
+  MaterialInternals & material_internals)
 {
   for (uint32_t j = 0; j < ai_material->mNumProperties; j++) {
     aiMaterialProperty * prop = ai_material->mProperties[j];
@@ -290,20 +296,12 @@ void AssimpLoader::setLightColorsFromAssimp(
       aiTextureMapping mapping;
       uint32_t uv_index;
       ai_material->GetTexture(aiTextureType_DIFFUSE, 0, &texture_name, &mapping, &uv_index);
-      std::string texture_path;
-      const aiTexture * texture = ai_scene->GetEmbeddedTexture(texture_name.C_Str());
-      if (texture == nullptr) {
-        // It's not an embedded texture. We have to go find it.
-        // Assume textures are in paths relative to the mesh
-        QFileInfo resource_path_finfo(QString::fromStdString(resource_path));
-        QDir resource_path_qdir = resource_path_finfo.dir();
-        texture_path = resource_path_qdir.path().toStdString() + "/" + texture_name.data;
-        loadTexture(texture_path);
-      } else {
-        // it's an embedded texture, like in GLB / glTF
-        texture_path = resource_path + texture_name.data;
-        loadEmbeddedTexture(texture, texture_path);
-      }
+
+      // Assume textures are in paths relative to the mesh
+      QFileInfo resource_path_finfo(QString::fromStdString(resource_path));
+      QDir resource_path_qdir = resource_path_finfo.dir();
+      std::string texture_path = resource_path_qdir.path().toStdString() + "/" + texture_name.data;
+      loadTexture(texture_path);
       Ogre::TextureUnitState * tu = material_internals.pass_->createTextureUnitState();
       tu->setTextureName(texture_path);
     } else if (propKey == "$clr.diffuse") {
@@ -346,35 +344,6 @@ void AssimpLoader::setLightColorsFromAssimp(
           break;
       }
     }
-  }
-}
-
-void AssimpLoader::loadEmbeddedTexture(
-  const aiTexture * texture, const std::string & resource_path)
-{
-  if (texture == nullptr) {
-    RVIZ_RENDERING_LOG_ERROR_STREAM("null texture!");
-    return;
-  }
-
-  // use the format hint to try to load the image
-  std::string format_hint(
-    texture->achFormatHint,
-    strnlen(texture->achFormatHint, sizeof(texture->achFormatHint)));
-
-  Ogre::DataStreamPtr stream(
-    new Ogre::MemoryDataStream(
-      (unsigned char *)texture->pcData, texture->mWidth));
-
-  try {
-    Ogre::Image image;
-    image.load(stream, format_hint.c_str());
-    Ogre::TextureManager::getSingleton().loadImage(
-      resource_path, ROS_PACKAGE_NAME, image);
-  } catch (Ogre::Exception & e) {
-    RVIZ_RENDERING_LOG_ERROR_STREAM(
-      "Could not load texture [" << resource_path.c_str() <<
-        "] with format hint [" << format_hint << "]: " << e.what());
   }
 }
 
@@ -518,7 +487,6 @@ void AssimpLoader::declareVertexBufferOrdering(
   }
 
   // TODO(anyone): vertex colors
-  (void)offset;
 }
 
 Ogre::HardwareVertexBufferSharedPtr

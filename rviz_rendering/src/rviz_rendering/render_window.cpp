@@ -155,6 +155,9 @@ ToString(const EnumType & enumValue)
 bool
 RenderWindow::event(QEvent * event)
 {
+  // qDebug() <<
+  //   "[" << QTime::currentTime().toString("HH:mm:ss:zzz") << "]:" <<
+  //   "event->type() ==" << ToString(event->type());
   switch (event->type()) {
     case QEvent::Resize:
       if (this->isExposed()) {
@@ -167,6 +170,7 @@ RenderWindow::event(QEvent * event)
     case QEvent::Type::MouseMove:
     case QEvent::Type::MouseButtonPress:
     case QEvent::Type::MouseButtonRelease:
+      // case QEvent::Type::MouseButtonRelease:
       if (on_mouse_events_callback_) {
         on_mouse_events_callback_(static_cast<QMouseEvent *>(event));
       }
@@ -180,6 +184,7 @@ RenderWindow::event(QEvent * event)
       QWindow::event(event);
       return false;
   }
+  // return QWindow::event(event);
 }
 
 void
@@ -193,6 +198,30 @@ RenderWindow::exposeEvent(QExposeEvent * expose_event)
   }
 }
 
+// bool
+// RenderWindow::eventFilter(QObject * target, QEvent * event)
+// {
+//   // if (target == this) {
+//   //   qDebug() <<
+//   //     "[" << QTime::currentTime().toString("HH:mm:ss:zzz") << "]:" <<
+//   //     "event->type() ==" << ToString(event->type()) <<
+//   //     "target ==" << target;
+//   //   switch (event->type()) {
+//   //     case QEvent::Resize:
+//   //       if (this->isExposed()) {
+//   //         impl_->resize(this->width(), this->height());
+//   //       }
+//   //       return false;
+//   //     case QEvent::UpdateRequest:
+//   //       this->renderNow();
+//   //       return true;
+//   //     default:
+//   //       return QWindow::event(event);
+//   //   }
+//   // }
+//   QWindow::eventFilter(target, event);
+//   return false;
+// }
 
 void
 RenderWindowOgreAdapter::setOgreCamera(RenderWindow * render_window, Ogre::Camera * ogre_camera)
@@ -200,34 +229,10 @@ RenderWindowOgreAdapter::setOgreCamera(RenderWindow * render_window, Ogre::Camer
   render_window->impl_->setCamera(ogre_camera);
 }
 
-void
-RenderWindowOgreAdapter::setSceneNodeCamera(
-  RenderWindow * render_window,
-  Ogre::SceneNode * ogre_camera)
-{
-  render_window->impl_->setSceneNodeCamera(ogre_camera);
-}
-
 Ogre::Camera *
 RenderWindowOgreAdapter::getOgreCamera(RenderWindow * render_window)
 {
   return render_window->impl_->getCamera();
-}
-
-void
-RenderWindowOgreAdapter::setOgreCameraPosition(
-  RenderWindow * render_window,
-  const Ogre::Vector3 & vec)
-{
-  render_window->impl_->setCameraPosition(vec);
-}
-
-void
-RenderWindowOgreAdapter::setOgreCameraOrientation(
-  RenderWindow * render_window,
-  const Ogre::Quaternion & quat)
-{
-  render_window->impl_->setCameraOrientation(quat);
 }
 
 Ogre::Viewport *
@@ -242,14 +247,6 @@ RenderWindowOgreAdapter::setBackgroundColor(
   const Ogre::ColourValue * color)
 {
   render_window->impl_->setBackgroundColor(*color);
-}
-
-void
-RenderWindowOgreAdapter::setDirectionalLightDirection(
-  RenderWindow * render_window,
-  const Ogre::Vector3 & vec)
-{
-  return render_window->impl_->setDirectionalLightDirection(vec);
 }
 
 Ogre::Light *

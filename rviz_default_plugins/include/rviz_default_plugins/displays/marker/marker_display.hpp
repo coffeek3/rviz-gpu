@@ -69,9 +69,10 @@ public:
 protected:
   void subscribe() override;
   void unsubscribe() override;
-  void processMessage(visualization_msgs::msg::Marker::ConstSharedPtr msg) override;
 
 private:
+  void processMessage(visualization_msgs::msg::Marker::ConstSharedPtr msg) override;
+
   void createMarkerArraySubscription();
 
   rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr array_sub_;

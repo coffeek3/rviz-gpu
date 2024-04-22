@@ -46,7 +46,7 @@ FloatEdit::FloatEdit(QWidget * parent)
   connect(this, SIGNAL(textEdited(const QString&)), this, SLOT(updateValue()));
 }
 
-float FloatEdit::getValue() const
+float FloatEdit::getValue()
 {
   return value_;
 }

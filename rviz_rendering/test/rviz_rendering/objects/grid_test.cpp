@@ -47,14 +47,17 @@ using namespace ::testing;  // NOLINT
 class GridTestFixture : public ::testing::Test
 {
 protected:
-  void SetUp()
+  static void SetUpTestCase()
   {
     testing_environment_ = std::make_shared<rviz_rendering::OgreTestingEnvironment>();
     testing_environment_->setUpOgreTestEnvironment();
   }
 
-  std::shared_ptr<rviz_rendering::OgreTestingEnvironment> testing_environment_;
+  static std::shared_ptr<rviz_rendering::OgreTestingEnvironment> testing_environment_;
 };
+
+std::shared_ptr<rviz_rendering::OgreTestingEnvironment>
+GridTestFixture::testing_environment_ = nullptr;
 
 rviz_rendering::Grid createGrid(
   rviz_rendering::Grid::Style style,

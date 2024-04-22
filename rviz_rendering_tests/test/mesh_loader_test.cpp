@@ -37,7 +37,7 @@
 #include <OgreRoot.h>
 #include <OgreSubMesh.h>
 #include <OgreMaterialManager.h>
-#include "resource_retriever/retriever.hpp"
+#include "resource_retriever/retriever.h"
 
 #include "ogre_testing_environment.hpp"
 #include "rviz_rendering/mesh_loader.hpp"
@@ -47,14 +47,17 @@ using namespace ::testing;  // NOLINT
 class MeshLoaderTestFixture : public ::testing::Test
 {
 protected:
-  void SetUp()
+  static void SetUpTestCase()
   {
     testing_environment_ = std::make_shared<rviz_rendering_tests::OgreTestingEnvironment>();
     testing_environment_->setUpOgreTestEnvironment();
   }
 
-  std::shared_ptr<rviz_rendering_tests::OgreTestingEnvironment> testing_environment_;
+  static std::shared_ptr<rviz_rendering_tests::OgreTestingEnvironment> testing_environment_;
 };
+
+std::shared_ptr<rviz_rendering_tests::OgreTestingEnvironment>
+MeshLoaderTestFixture::testing_environment_ = nullptr;
 
 void assertVector3Equality(Ogre::Vector3 actual, Ogre::Vector3 expected)
 {
@@ -95,13 +98,21 @@ TEST_F(MeshLoaderTestFixture, can_load_stl_files) {
   float expected_bound_radius = 34.920441f;
   size_t expected_vertex_count = 35532;
   size_t actual_vertex_count = 0;
-  for (size_t i = 0; i < mesh->getNumSubMeshes(); ++i) {
+  // Meshes are divided and stored in submeshes with at most 2004 vertices each.
+  for (int i = 0; i < 18; ++i) {
     actual_vertex_count += mesh->getSubMesh(i)->vertexData->vertexCount;
   }
   ASSERT_TRUE(mesh->isManuallyLoaded());
   ASSERT_EQ(mesh_path, mesh->getName());
   ASSERT_FLOAT_EQ(expected_bound_radius, mesh->getBoundingSphereRadius());
   ASSERT_EQ(expected_vertex_count, actual_vertex_count);
+}
+
+TEST_F(MeshLoaderTestFixture, loading_ascii_stl_files_fail) {
+  /// Load an ascii STL file. Note that only binary STL files are supported.
+  std::string mesh_path = "package://rviz_rendering_tests/test_meshes/ascii.stl";
+
+  ASSERT_FALSE(rviz_rendering::loadMeshFromResource(mesh_path));
 }
 
 TEST_F(MeshLoaderTestFixture, loading_invalid_short_stl_files_fail) {
@@ -118,13 +129,6 @@ TEST_F(MeshLoaderTestFixture, loading_invalid_stl_files_fail) {
   ASSERT_FALSE(rviz_rendering::loadMeshFromResource(mesh_path));
 }
 
-TEST_F(MeshLoaderTestFixture, loading_invalid_ascii_stl_file) {
-  /// Load an invalid STL binary file (size does not match the expected size).
-  std::string mesh_path = "package://rviz_rendering_tests/test_meshes/invalid_ascii.stl";
-
-  ASSERT_FALSE(rviz_rendering::loadMeshFromResource(mesh_path));
-}
-
 TEST_F(MeshLoaderTestFixture, loading_invalid_stl_files_should_fail) {
   /// Load an invalid STL binary file (size does not match the expected size,
   /// but does if incorrectly read as an 16-bit uint)
@@ -134,12 +138,13 @@ TEST_F(MeshLoaderTestFixture, loading_invalid_stl_files_should_fail) {
   ASSERT_FALSE(rviz_rendering::loadMeshFromResource(mesh_path));
 }
 
-TEST_F(MeshLoaderTestFixture, loading_almost_invalid_stl_files_should_fail) {
+TEST_F(MeshLoaderTestFixture, loading_almost_valid_stl_files_should_succed) {
   /// Load a "potentially" valid STL binary file with bigger size than the
-  /// expected. The file will not load.
-  std::string mesh_path = "package://rviz_rendering_tests/test_meshes/invalid_extra.stl";
+  /// expected. The extra "unexpected" data at the end of the file should be
+  /// ignored.
+  std::string mesh_path = "package://rviz_rendering_tests/test_meshes/valid_extra.stl";
 
-  EXPECT_FALSE(rviz_rendering::loadMeshFromResource(mesh_path));
+  ASSERT_TRUE(rviz_rendering::loadMeshFromResource(mesh_path));
 }
 
 TEST_F(MeshLoaderTestFixture, loading_stl_mesh_twice_should_not_fail) {

@@ -47,12 +47,12 @@ StringProperty::StringProperty(
 : Property(name, default_value, description, parent, changed_slot, receiver)
 {}
 
-std::string StringProperty::getStdString() const
+std::string StringProperty::getStdString()
 {
   return getValue().toString().toStdString();
 }
 
-QString StringProperty::getString() const
+QString StringProperty::getString()
 {
   return getValue().toString();
 }

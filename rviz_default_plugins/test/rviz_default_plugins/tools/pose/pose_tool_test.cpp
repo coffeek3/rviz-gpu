@@ -34,7 +34,7 @@
 #include <memory>
 #include <utility>
 
-#include <OgreVector.h>
+#include <OgreVector3.h>
 
 #include "rviz_default_plugins/tools/pose/pose_tool.hpp"
 #include "rviz_rendering/viewport_projection_finder.hpp"

@@ -56,10 +56,9 @@ public:
   RelativeHumidityDisplay();
   ~RelativeHumidityDisplay() override;
 
-protected:
+private:
   void processMessage(const sensor_msgs::msg::RelativeHumidity::ConstSharedPtr message) override;
 
-private:
   void setInitialValues() override;
   void hideUnneededProperties() override;
 };

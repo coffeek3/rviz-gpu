@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "screenshot_dialog.hpp"
+#include "./screenshot_dialog.hpp"
 
 #include <utility>
 
@@ -47,7 +47,7 @@
 #include <QVBoxLayout>  // NOLINT: cpplint is unable to handle the include order here
 #include <QWindow>  // NOLINT: cpplint is unable to handle the include order here
 
-#include "scaled_image_widget.hpp"
+#include "./scaled_image_widget.hpp"
 
 namespace rviz_common
 {
@@ -55,7 +55,7 @@ namespace rviz_common
 ScreenshotDialog::ScreenshotDialog(
   QWidget * main_window, QWidget * render_window,
   const QString & default_save_dir)
-: QWidget(nullptr),    // This should be a top-level window to act like a dialog.
+: QWidget(NULL),    // This should be a top-level window to act like a dialog.
   main_window_(main_window),
   render_window_(render_window),
   save_full_window_(false),
@@ -126,12 +126,7 @@ void ScreenshotDialog::takeScreenshotNow()
   if (save_full_window_) {
     screenshot_ = screen->grabWindow(main_window_->winId());
   } else {
-    // There is a known issue in Qt where calling winId() on an OpenGL window
-    // (OGRE being a wrapper for OpenGL) can result in rendering 'glitches" (See
-    // https://doc.qt.io/qt-5/qopenglwidget.html). As a work-around, we can raise
-    // the main window, causing the render window to re-render its graphics display.
     screenshot_ = screen->grabWindow(render_window_->winId());
-    main_window_->raise();
   }
   image_widget_->setImage(screenshot_);
 }

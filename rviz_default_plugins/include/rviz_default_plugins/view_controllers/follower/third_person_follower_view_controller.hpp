@@ -31,7 +31,7 @@
 #ifndef RVIZ_DEFAULT_PLUGINS__VIEW_CONTROLLERS__FOLLOWER__THIRD_PERSON_FOLLOWER_VIEW_CONTROLLER_HPP_
 #define RVIZ_DEFAULT_PLUGINS__VIEW_CONTROLLERS__FOLLOWER__THIRD_PERSON_FOLLOWER_VIEW_CONTROLLER_HPP_
 
-#include <OgreVector.h>
+#include <OgreVector3.h>
 
 #include "rviz_default_plugins/view_controllers/xy_orbit/xy_orbit_view_controller.hpp"
 
@@ -52,6 +52,4 @@ protected:
 }  // namespace view_controllers
 }  // namespace rviz_default_plugins
 
-// *INDENT-OFF*
 #endif  // RVIZ_DEFAULT_PLUGINS__VIEW_CONTROLLERS__FOLLOWER__THIRD_PERSON_FOLLOWER_VIEW_CONTROLLER_HPP_
-// *INDENT-ON*

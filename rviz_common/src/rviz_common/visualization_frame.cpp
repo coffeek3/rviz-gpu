@@ -29,10 +29,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rviz_common/visualization_frame.hpp"
+#include "visualization_frame.hpp"
 
 #include <exception>
-#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -70,7 +69,6 @@
 #include "rviz_common/render_panel.hpp"
 #include "rviz_common/tool.hpp"
 #include "rviz_common/yaml_config_reader.hpp"
-#include "rviz_common/yaml_config_writer.hpp"
 #include "rviz_rendering/render_window.hpp"
 
 #include "./env_config.hpp"
@@ -80,9 +78,10 @@
 #include "./panel_factory.hpp"
 #include "./screenshot_dialog.hpp"
 #include "./splash_screen.hpp"
-#include "rviz_common/tool_manager.hpp"
+#include "./tool_manager.hpp"
 #include "rviz_common/visualization_manager.hpp"
 #include "./widget_geometry_change_detector.hpp"
+#include "./yaml_config_writer.hpp"
 
 // #include "./displays_panel.hpp"
 #include "./help_panel.hpp"
@@ -219,6 +218,20 @@ void VisualizationFrame::reset()
   manager_->resetTime();
 }
 
+#if 0
+void VisualizationFrame::changeMaster()
+{
+  if (prepareToExit()) {
+    QApplication::exit(255);
+  }
+}
+
+void VisualizationFrame::setShowChooseNewMaster(bool show)
+{
+  show_choose_new_master_option_ = show;
+}
+#endif
+
 void VisualizationFrame::setHelpPath(const QString & help_path)
 {
   help_path_ = help_path;
@@ -238,11 +251,9 @@ void VisualizationFrame::initialize(
 
   loadPersistentSettings();
 
-  if (app_) {
-    QDir app_icon_path(QString::fromStdString(package_path_) + "/icons/package.png");
-    QIcon app_icon(app_icon_path.absolutePath());
-    app_->setWindowIcon(app_icon);
-  }
+  QDir app_icon_path(QString::fromStdString(package_path_) + "/icons/package.png");
+  QIcon app_icon(app_icon_path.absolutePath());
+  app_->setWindowIcon(app_icon);
 
   if (splash_path_ != "") {
     QPixmap splash_image(splash_path_);
@@ -254,10 +265,10 @@ void VisualizationFrame::initialize(
 
   // Periodically process events for the splash screen.
   // See: http://doc.qt.io/qt-5/qsplashscreen.html#details
-  QCoreApplication::processEvents();
+  if (app_) {app_->processEvents();}
 
   // Periodically process events for the splash screen.
-  QCoreApplication::processEvents();
+  if (app_) {app_->processEvents();}
 
   QWidget * central_widget = new QWidget(this);
   QHBoxLayout * central_layout = new QHBoxLayout;
@@ -294,22 +305,22 @@ void VisualizationFrame::initialize(
   central_widget->setLayout(central_layout);
 
   // Periodically process events for the splash screen.
-  QCoreApplication::processEvents();
+  if (app_) {app_->processEvents();}
 
   initMenus();
 
   // Periodically process events for the splash screen.
-  QCoreApplication::processEvents();
+  if (app_) {app_->processEvents();}
 
   initToolbars();
 
   // Periodically process events for the splash screen.
-  QCoreApplication::processEvents();
+  if (app_) {app_->processEvents();}
 
   setCentralWidget(central_widget);
 
   // Periodically process events for the splash screen.
-  QCoreApplication::processEvents();
+  if (app_) {app_->processEvents();}
 
   // TODO(wjwwood): sort out the issue with initialization order between
   //                render_panel and VisualizationManager
@@ -321,12 +332,12 @@ void VisualizationFrame::initialize(
   panel_factory_ = new PanelFactory(rviz_ros_node_, manager_);
 
   // Periodically process events for the splash screen.
-  QCoreApplication::processEvents();
+  if (app_) {app_->processEvents();}
 
   render_panel_->initialize(manager_);
 
   // Periodically process events for the splash screen.
-  QCoreApplication::processEvents();
+  if (app_) {app_->processEvents();}
 
   ToolManager * tool_man = manager_->getToolManager();
 
@@ -339,7 +350,7 @@ void VisualizationFrame::initialize(
   manager_->initialize();
 
   // Periodically process events for the splash screen.
-  QCoreApplication::processEvents();
+  if (app_) {app_->processEvents();}
 
   if (display_config_file != "") {
     loadDisplayConfig(display_config_file);
@@ -348,11 +359,12 @@ void VisualizationFrame::initialize(
   }
 
   // Periodically process events for the splash screen.
-  QCoreApplication::processEvents();
+  if (app_) {app_->processEvents();}
 
   delete splash_;
   splash_ = nullptr;
 
+  manager_->startUpdate();
   initialized_ = true;
   Q_EMIT statusUpdate("RViz is ready.");
 
@@ -491,6 +503,7 @@ void VisualizationFrame::initMenus()
 
   QMenu * help_menu = menuBar()->addMenu("&Help");
   help_menu->addAction("Show &Help panel", this, SLOT(showHelpPanel()));
+  help_menu->addAction("Open rviz wiki in browser", this, SLOT(onHelpWiki()));
   help_menu->addSeparator();
   help_menu->addAction("&About", this, SLOT(onHelpAbout()));
 }
@@ -601,9 +614,11 @@ void VisualizationFrame::openNewPanelDialog()
     &class_id,
     &display_name,
     this);
+  manager_->stopUpdate();
   if (dialog->exec() == QDialog::Accepted) {
     addPanelByName(display_name, class_id);
   }
+  manager_->startUpdate();
 }
 
 void VisualizationFrame::openNewToolDialog()
@@ -618,9 +633,11 @@ void VisualizationFrame::openNewToolDialog()
     empty,
     tool_man->getToolClasses(),
     &class_id);
+  manager_->stopUpdate();
   if (dialog->exec() == QDialog::Accepted) {
     tool_man->addTool(class_id);
   }
+  manager_->startUpdate();
   activateWindow();  // Force keyboard focus back on main window.
 }
 
@@ -640,7 +657,7 @@ void VisualizationFrame::updateRecentConfigMenu()
         display_name = (
           QDir::homePath() + "/" +
           QString::fromStdString(display_name.substr(home_dir_.size()))
-        ).toStdString();
+          ).toStdString();
       }
       QString qdisplay_name = QString::fromStdString(display_name);
       QAction * action = new QAction(qdisplay_name, this);
@@ -691,13 +708,11 @@ void VisualizationFrame::loadDisplayConfig(const QString & qpath)
   setWindowModified(false);
   loading_ = true;
 
-  std::unique_ptr<LoadingDialog> dialog;
+  LoadingDialog * dialog = nullptr;
   if (initialized_) {
-    dialog.reset(new LoadingDialog(this));
+    dialog = new LoadingDialog(this);
     dialog->show();
-    connect(
-      this, SIGNAL(statusUpdate(const QString&)),
-      dialog.get(), SLOT(showMessage(const QString&)));
+    connect(this, SIGNAL(statusUpdate(const QString&)), dialog, SLOT(showMessage(const QString&)));
   }
 
   YamlConfigReader reader;
@@ -716,6 +731,8 @@ void VisualizationFrame::loadDisplayConfig(const QString & qpath)
   setDisplayConfigFile(path);
 
   last_config_dir_ = path_info.absolutePath().toStdString();
+
+  delete dialog;
 
   post_load_timer_->start(1000);
 }
@@ -739,43 +756,16 @@ void VisualizationFrame::setDisplayConfigModified()
   }
 }
 
-void VisualizationFrame::setDisplayTitleFormat(const QString & title_format)
-{
-  display_title_format_ = title_format.toStdString();
-}
-
 void VisualizationFrame::setDisplayConfigFile(const std::string & path)
 {
   display_config_file_ = path;
+
   std::string title;
-
-  if (display_title_format_.empty()) {
-    if (path == default_display_config_file_) {
-      title = "RViz[*]";
-    } else {
-      title = QDir::toNativeSeparators(QString::fromStdString(path)).toStdString() + "[*] - RViz";
-    }
+  if (path == default_display_config_file_) {
+    title = "RViz[*]";
   } else {
-    auto find_and_replace_token =
-      [](std::string & title, const std::string & token, const std::string & replacement)
-      {
-        std::size_t found = title.find(token);
-        if (found != std::string::npos) {
-          title.replace(found, token.length(), replacement);
-        }
-      };
-    title = display_title_format_;
-    std::filesystem::path full_filename(path.c_str());
-    find_and_replace_token(
-      title, "{NAMESPACE}",
-      rviz_ros_node_.lock()->get_raw_node()->get_namespace());
-    find_and_replace_token(title, "{CONFIG_PATH}", full_filename.parent_path().string());
-    find_and_replace_token(title, "{CONFIG_FILENAME}", full_filename.filename().string());
-    if (title.find("[*]") == std::string::npos) {
-      title.append("[*]");
-    }
+    title = QDir::toNativeSeparators(QString::fromStdString(path)).toStdString() + "[*] - RViz";
   }
-
   setWindowTitle(QString::fromStdString(title));
 }
 
@@ -940,7 +930,9 @@ bool VisualizationFrame::prepareToExit()
     box.setInformativeText(QString::fromStdString("Save changes to " + display_config_file_ + "?"));
     box.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
     box.setDefaultButton(QMessageBox::Save);
+    manager_->stopUpdate();
     int result = box.exec();
+    manager_->startUpdate();
     switch (result) {
       case QMessageBox::Save:
         if (saveDisplayConfig(QString::fromStdString(display_config_file_))) {
@@ -977,10 +969,12 @@ bool VisualizationFrame::prepareToExit()
 
 void VisualizationFrame::onOpen()
 {
+  manager_->stopUpdate();
   QString filename = QFileDialog::getOpenFileName(
     this, "Choose a file to open",
     QString::fromStdString(last_config_dir_),
     "RViz config files (" CONFIG_EXTENSION_WILDCARD ")");
+  manager_->startUpdate();
 
   if (!filename.isEmpty()) {
     if (!QFile(filename).exists()) {
@@ -1002,6 +996,7 @@ void VisualizationFrame::onSave()
   savePersistentSettings();
 
   if (!saveDisplayConfig(QString::fromStdString(display_config_file_))) {
+    manager_->stopUpdate();
     QMessageBox box(this);
     box.setWindowTitle("Failed to save.");
     box.setText(getErrorMessage());
@@ -1013,15 +1008,18 @@ void VisualizationFrame::onSave()
     if (box.exec() == QMessageBox::Save) {
       onSaveAs();
     }
+    manager_->startUpdate();
   }
 }
 
 void VisualizationFrame::onSaveAs()
 {
+  manager_->stopUpdate();
   QString q_filename = QFileDialog::getSaveFileName(
     this, "Choose a file to save to",
     QString::fromStdString(last_config_dir_),
     "RViz config files (" CONFIG_EXTENSION_WILDCARD ")");
+  manager_->startUpdate();
 
   if (!q_filename.isEmpty()) {
     if (!q_filename.endsWith("." CONFIG_EXTENSION)) {
@@ -1077,22 +1075,6 @@ void VisualizationFrame::addTool(Tool * tool)
   tool_to_action_map_[tool] = action;
 
   remove_tool_menu_->addAction(tool->getName());
-
-  QObject::connect(
-    tool, &Tool::nameChanged, this,
-    &VisualizationFrame::VisualizationFrame::onToolNameChanged);
-}
-
-void VisualizationFrame::onToolNameChanged(const QString & name)
-{
-  // Early return if the tool is not present
-  auto it = tool_to_action_map_.find(qobject_cast<Tool *>(sender()));
-  if (it == tool_to_action_map_.end()) {
-    return;
-  }
-
-  // Change the name of the action
-  it->second->setIconText(name);
 }
 
 void VisualizationFrame::onToolbarActionTriggered(QAction * action)
@@ -1165,6 +1147,11 @@ void VisualizationFrame::showHelpPanel()
 void VisualizationFrame::onHelpDestroyed()
 {
   show_help_action_ = nullptr;
+}
+
+void VisualizationFrame::onHelpWiki()
+{
+  QDesktopServices::openUrl(QUrl("http://www.ros.org/wiki/rviz"));
 }
 
 void VisualizationFrame::onHelpAbout()

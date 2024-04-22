@@ -65,10 +65,9 @@ public:
 
   void reset() override;
 
-protected:
+private:
   void processMessage(visualization_msgs::msg::MarkerArray::ConstSharedPtr array) override;
 
-private:
   std::unique_ptr<MarkerCommon> marker_common_;
 };
 

@@ -54,13 +54,6 @@ public:
     return object;
   }
 
-  ~SelectionManagerTestFixture()
-  {
-    if (render_window_) {
-      delete render_window_;
-    }
-  }
-
   rviz_rendering::RenderWindow * render_window_ = nullptr;
 };
 

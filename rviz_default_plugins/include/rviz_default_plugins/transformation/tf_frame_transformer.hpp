@@ -34,7 +34,7 @@
 #include <string>
 #include <vector>
 
-#include <OgreVector.h>
+#include <OgreVector3.h>
 #include <OgreQuaternion.h>
 
 #include "rviz_common/transformation/frame_transformer.hpp"
@@ -123,10 +123,6 @@ public:
     const tf2::TimePoint & time,
     const tf2::Duration & timeout,
     tf2_ros::TransformReadyCallback callback) override;
-
-  void
-  cancel(
-    const tf2_ros::TransformStampedFuture & ts_future) override;
 
 private:
   std::shared_ptr<TFWrapper> tf_wrapper_;

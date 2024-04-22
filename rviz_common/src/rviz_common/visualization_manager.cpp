@@ -54,6 +54,7 @@
 #include <QTimer>  // NOLINT: cpplint cannot handle include order here
 #include <QWindow>  // NOLINT: cpplint cannot handle include order here
 
+// #include "tf/transform_listener.h"
 #include "rclcpp/clock.hpp"
 #include "rclcpp/time.hpp"
 #include "rviz_rendering/material_manager.hpp"
@@ -65,6 +66,9 @@
 #include "./displays_panel.hpp"
 #include "frame_manager.hpp"
 #include "rviz_common/load_resource.hpp"
+// #include "./ogre_helpers/ogre_render_queue_clearer.hpp"
+// #include "./ogre_helpers/qt_ogre_render_window.hpp"
+// #include "./ogre_helpers/render_system.hpp"
 #include "rviz_common/properties/color_property.hpp"
 #include "rviz_common/properties/int_property.hpp"
 #include "rviz_common/properties/parse_color.hpp"
@@ -80,9 +84,12 @@
 #include "rviz_common/interaction/view_picker.hpp"
 #include "rviz_common/interaction/view_picker_iface.hpp"
 #include "rviz_common/tool.hpp"
-#include "rviz_common/tool_manager.hpp"
+#include "./tool_manager.hpp"
+// #include "rviz_common/view_controller.hpp"
 #include "rviz_common/view_manager.hpp"
+// #include "./viewport_mouse_event.hpp"
 
+// #include "rviz/window_manager_interface.h"
 
 namespace rviz_common
 {
@@ -124,6 +131,10 @@ private:
 class VisualizationManagerPrivate
 {
 public:
+  // ros::CallbackQueue threaded_queue_;
+  // boost::thread_group threaded_queue_threads_;
+  // ros::NodeHandle update_nh_;
+  // ros::NodeHandle threaded_nh_;
   std::mutex render_mutex_;
 };
 
@@ -135,8 +146,6 @@ VisualizationManager::VisualizationManager(
   update_timer_(0),
   shutting_down_(false),
   render_panel_(render_panel),
-  wall_clock_elapsed_(0),
-  ros_time_elapsed_(0),
   time_update_timer_(0.0f),
   frame_update_timer_(0.0f),
   render_requested_(1),
@@ -160,6 +169,18 @@ VisualizationManager::VisualizationManager(
     SIGNAL(transformerChanged(std::shared_ptr<rviz_common::transformation::FrameTransformer>)),
     frame_manager_,
     SLOT(setTransformerPlugin(std::shared_ptr<rviz_common::transformation::FrameTransformer>)));
+
+// TODO(wjwwood): is this needed?
+#if 0
+  render_panel->setAutoRender(false);
+#endif
+
+  // scene_manager_ = ogre_root_->createSceneManager(Ogre::ST_GENERIC);
+
+// TODO(wjwwood): is this needed?
+#if 0
+  rviz::RenderSystem::RenderSystem::get()->prepareOverlays(scene_manager_);
+#endif
 
   root_display_group_ = new DisplayGroup();
   root_display_group_->setName("root");
@@ -212,22 +233,20 @@ VisualizationManager::VisualizationManager(
   selection_manager_ = std::make_shared<SelectionManager>(this);
   view_picker_ = std::make_shared<ViewPicker>(this);
 
-  rcl_jump_threshold_t jump_threshold;
-  jump_threshold.on_clock_change = true;
-  // Disable forward jump callbacks
-  jump_threshold.min_forward.nanoseconds = 0;
-  // Anything backwards is a jump
-  jump_threshold.min_backward.nanoseconds = -1;
-  clock_jump_handler_ = clock_->create_jump_callback(
-    nullptr, std::bind(
-      &VisualizationManager::onTimeJump, this,
-      std::placeholders::_1), jump_threshold);
-
-  connect(this, SIGNAL(timeJumped()), this, SLOT(resetTime()));
-
   executor_->add_node(rviz_ros_node_.lock()->get_raw_node());
+// TODO(wjwwood): redo with executors?
+#if 0
+  private_->threaded_queue_threads_.create_thread(
+    std::bind(&VisualizationManager::threadedQueueThreadFunc, this));
+#endif
 
   display_factory_ = new DisplayFactory();
+
+// TODO(wjwwood): move this to rviz_rendering somewhere?
+#if 0
+  ogre_render_queue_clearer_ = new OgreRenderQueueClearer();
+  Ogre::Root::getSingletonPtr()->addFrameListener(ogre_render_queue_clearer_);
+#endif
 
   update_timer_ = new QTimer;
   connect(update_timer_, SIGNAL(timeout()), this, SLOT(onUpdate()));
@@ -238,6 +257,9 @@ VisualizationManager::~VisualizationManager()
   delete update_timer_;
 
   shutting_down_ = true;
+#if 0
+  private_->threaded_queue_threads_.join_all();
+#endif
 
   delete display_property_tree_model_;
   delete tool_manager_;
@@ -245,6 +267,11 @@ VisualizationManager::~VisualizationManager()
   delete frame_manager_;
   delete private_;
   delete transformation_manager_;
+
+#if 0
+  Ogre::Root::getSingletonPtr()->removeFrameListener(ogre_render_queue_clearer_);
+  delete ogre_render_queue_clearer_;
+#endif
 }
 
 void VisualizationManager::initialize()
@@ -259,6 +286,13 @@ void VisualizationManager::initialize()
   last_update_ros_time_ = clock_->now();
   last_update_wall_time_ = std::chrono::system_clock::now();
 }
+
+#if 0
+ros::CallbackQueueInterface * VisualizationManager::getThreadedQueue()
+{
+  return &private_->threaded_queue_;
+}
+#endif
 
 void VisualizationManager::lockRender()
 {
@@ -275,6 +309,13 @@ VisualizationManager::getRosNodeAbstraction() const
 {
   return rviz_ros_node_;
 }
+
+#if 0
+ros::CallbackQueueInterface * VisualizationManager::getUpdateQueue()
+{
+  return ros::getGlobalCallbackQueue();
+}
+#endif
 
 void VisualizationManager::startUpdate()
 {
@@ -384,8 +425,8 @@ void VisualizationManager::onUpdate()
     view_manager_->getCurrent() &&
     view_manager_->getCurrent()->getCamera())
   {
-    rviz_rendering::RenderWindowOgreAdapter::setDirectionalLightDirection(
-      render_panel_->getRenderWindow(),
+    using rviz_rendering::RenderWindowOgreAdapter;
+    RenderWindowOgreAdapter::getDirectionalLight(render_panel_->getRenderWindow())->setDirection(
       view_manager_->getCurrent()->getCamera()->getDerivedDirection());
   }
 
@@ -394,20 +435,6 @@ void VisualizationManager::onUpdate()
     render_requested_ = 0;
     std::lock_guard<std::mutex> lock(private_->render_mutex_);
     ogre_root_->renderOneFrame();
-  }
-}
-
-void VisualizationManager::onTimeJump(const rcl_time_jump_t & jump)
-{
-  if (jump.clock_change == RCL_ROS_TIME_ACTIVATED ||
-    jump.clock_change == RCL_ROS_TIME_DEACTIVATED)
-  {
-    RVIZ_COMMON_LOG_WARNING("Detected time source change. Resetting RViz.");
-    Q_EMIT timeJumped();
-  } else if (jump.delta.nanoseconds < 0) {
-    RVIZ_COMMON_LOG_WARNING_STREAM(
-      "Detected jump back in time. Resetting RViz.");
-    Q_EMIT timeJumped();
   }
 }
 
@@ -579,7 +606,10 @@ double VisualizationManager::getWallClockElapsed()
 
 double VisualizationManager::getROSTimeElapsed()
 {
-  return static_cast<double>(ros_time_elapsed_) / 1e9;
+  // TODO(wjwwood): why does this function return now - begin, whereas the getWallClockElapsed
+  //                returns a pre-calculated elapsed value?
+  //                figure out how this function is being used and make these consistent
+  return (frame_manager_->getTime() - ros_time_begin_).nanoseconds() / 1e9;
 }
 
 void VisualizationManager::updateBackgroundColor()
@@ -608,7 +638,7 @@ void VisualizationManager::handleMouseEvent(const ViewportMouseEvent & vme)
   int flags = 0;
   if (current_tool) {
     ViewportMouseEvent _vme = vme;
-
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     QWindow * window = vme.panel->windowHandle();
     if (window) {
       double pixel_ratio = window->devicePixelRatio();
@@ -617,7 +647,7 @@ void VisualizationManager::handleMouseEvent(const ViewportMouseEvent & vme)
       _vme.last_x = static_cast<int>(pixel_ratio * _vme.last_x);
       _vme.last_y = static_cast<int>(pixel_ratio * _vme.last_y);
     }
-
+#endif
     flags = current_tool->processMouseEvent(_vme);
     vme.panel->setCursor(current_tool->getCursor());
     vme.panel->getRenderWindow()->setCursor(current_tool->getCursor());
@@ -637,6 +667,16 @@ void VisualizationManager::handleMouseEvent(const ViewportMouseEvent & vme)
 void VisualizationManager::handleChar(QKeyEvent * event, RenderPanel * panel)
 {
   tool_manager_->handleChar(event, panel);
+}
+
+void VisualizationManager::threadedQueueThreadFunc()
+{
+  // TODO(wjwwood): redo with executors
+#if 0
+  while (!shutting_down_) {
+    private_->threaded_queue_.callOne(ros::WallDuration(0.1));
+  }
+#endif
 }
 
 void VisualizationManager::notifyConfigChanged()

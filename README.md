@@ -15,15 +15,13 @@ For some displays, the [documentation is updated](docs/FEATURES.md).
 | Displays              | Tools         | View Controller       | Panels          |
 | --------------------- | ------------- | --------------------- | --------------- |
 | Axes                  | Move Camera   | Orbit                 | Displays        |
-| Camera                | Focus Camera  | XY Orbit              | Help            |
-| DepthCloud            | Measure       | First Person          | Selections      |
-| Effort                | Select        | Third Person Follower | Time            |
-| Fluid                 | 2D Nav Goal   | Top Down Orthographic | Tool Properties |
-| Grid                  | Publish Point |                       | Views           |
-| Grid Cells            | Initial Pose  |
-| Illuminance           | Interact      |
-| Image                 |
-| Interactive Marker    |
+| Camera                | Focus Camera  | XY Orbit              | Help            | 
+| Fluid Pressure        | Measure       | First Person          | Selections      |
+| Grid                  | Select        | Third Person Follower | Tool Properties | 
+| Grid Cells            | 2D Nav Goal   | Top Down Orthographic | Views           |
+| Illuminance           | Publish Point |
+| Image                 | Initial Pose  |
+| Interactive Marker    | Interact      |
 | Laser Scan            |
 | Map                   |
 | Marker                |
@@ -44,7 +42,16 @@ For some displays, the [documentation is updated](docs/FEATURES.md).
 
 
 ### Not yet ported
+These features have not been ported to `ros2/rviz` yet.
+
+| Displays      | Panels |
+| ------------- | ------ |
+| DepthCloud    | Time   |
+| Effort        |
+
 Other features:
+- Filtering of Topic lists by topic type
+- Image transport features
 - Stereo
 
 In case you wished to see those features in RViz for ROS 2, feel free to add a pull request.
@@ -77,7 +84,7 @@ More detailed information on how to write a transformation plugin and on how to 
 
 The simplest way to build from source is to use the official installation guide, since RViz is part of the official ROS 2 repos file.
 
-https://docs.ros.org/en/rolling/Installation.html
+https://github.com/ros2/ros2/wiki/Installation
 
 #### Building RViz in a separate workspace
 
@@ -108,7 +115,7 @@ The `--merge-install` flag is optional but ensures a cleaner environment which i
 
 More instructions and examples to come.
 
-In addition to the [ROS 2 Developer Guide](https://docs.ros.org/en/rolling/Contributing/Developer-Guide.html) we suggest the following.
+In addition to the [ROS 2 Developer Guide](https://github.com/ros2/ros2/wiki/Developer-Guide) we suggest the following.
 
 ### Testing
 
