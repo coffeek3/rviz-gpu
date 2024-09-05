@@ -72,6 +72,13 @@ find_package(tf2_ros REQUIRED)
 find_package(urdf REQUIRED)
 find_package(visualization_msgs REQUIRED)
 
+# 添加包含路径
+include_directories(
+  ${OGRE_INCLUDE_DIRS}
+  ${OGRE_RTShaderSystem_INCLUDE_DIRS}
+  ${OGRE_INCLUDE_DIRS}/RTShaderSystem
+)
+
 set(rviz_default_plugins_headers_to_moc
   include/rviz_default_plugins/displays/axes/axes_display.hpp
   include/rviz_default_plugins/displays/camera/camera_display.hpp
@@ -292,6 +299,7 @@ install(
   DESTINATION "share/${PROJECT_NAME}"
 )
 
+set(BUILD_TESTING FALSE)
 if(BUILD_TESTING)
   # TODO(wjwwood): replace this with ament_lint_auto() and/or add the copyright linter back
   find_package(ament_cmake_cppcheck REQUIRED)

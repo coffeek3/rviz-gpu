@@ -144,6 +144,9 @@ public:
   RVIZ_RENDERING_PUBLIC
   static const Ogre::ColourValue & getDefaultZColor();
 
+  RVIZ_RENDERING_PUBLIC
+  void setMaterial(Ogre::MaterialPtr material);
+
 private:
   // prohibit copying
   Axes(const Axes & other)

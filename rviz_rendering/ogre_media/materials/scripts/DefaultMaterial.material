@@ -1,0 +1,11 @@
+material RTSS/DefaultMaterial
+{
+    technique
+    {
+        pass
+        {
+            // RT Shader system section.
+            // rtshader_system
+        }
+    }
+}

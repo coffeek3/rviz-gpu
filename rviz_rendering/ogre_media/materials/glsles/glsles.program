@@ -1,0 +1,190 @@
+
+//includes:
+// fragment_program rviz/glsles/include/circle_impl.frag glsles { source circle_impl.frag }
+// fragment_program rviz/glsles/include/pack_depth.frag glsles { source pack_depth.frag }
+// vertex_program rviz/glsles/include/pass_depth.vert glsles { source pass_depth.vert }
+
+//all shaders, sorted by name
+
+
+fragment_program rviz/glsles/depth_circle.frag glsles
+{
+  source depth_circle.frag
+  default_params
+  {
+    param_named_auto alpha custom 1
+    param_named_auto far_clip_distance far_clip_distance
+  }
+}
+
+
+vertex_program rviz/glsles/depth_circle.vert glsles
+{
+  source depth_circle.vert
+
+  default_params
+  {
+      param_named_auto worldviewproj_matrix worldviewproj_matrix
+      param_named_auto far_clip_distance far_clip_distance
+  }
+}
+
+fragment_program rviz/glsles/depth.frag glsles
+{
+  source depth.frag
+  default_params
+  {
+    param_named_auto alpha custom         1
+    param_named_auto far_clip_distance far_clip_distance
+  }
+}
+
+
+vertex_program rviz/glsles/depth.vert glsles
+{
+  source depth.vert
+  preprocessor_defines WITH_DEPTH=1
+  default_params {
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto worldview_matrix     worldview_matrix
+  }
+}
+
+
+fragment_program rviz/glsles/flat_color.frag glsles
+{
+  source flat_color.frag
+  default_params
+  {
+    param_named_auto highlight custom 5
+    param_named_auto alpha custom 1
+  }
+}
+
+
+fragment_program rviz/glsles/flat_color_circle.frag glsles
+{
+  source flat_color_circle.frag
+  default_params
+  {
+    param_named_auto highlight custom 5
+    param_named_auto alpha custom 1
+  }
+}
+
+
+fragment_program rviz/glsles/indexed_8bit_image.frag glsles
+{
+  source indexed_8bit_image.frag
+  default_params
+  {
+    param_named_auto alpha custom 1
+  }
+}
+
+vertex_program rviz/glsles/indexed_8bit_image.vert glsles
+{
+  source indexed_8bit_image.vert
+}
+
+fragment_program rviz/glsles/pass_color_circle.frag glsles
+{
+  source pass_color_circle.frag
+  default_params
+  {
+    param_named_auto pick_color custom    2
+  }
+}
+
+
+fragment_program rviz/glsles/pass_color.frag glsl
+{
+  source pass_color.frag
+}
+
+
+fragment_program rviz/glsles/pickcolor_circle.frag glsles
+{
+  source pickcolor_circle.frag
+  default_params
+  {
+    param_named_auto pick_color custom    2
+  }
+}
+
+
+fragment_program rviz/glsles/pickcolor.frag glsles
+{
+  source pickcolor.frag
+  default_params
+  {
+    param_named_auto pick_color custom    2
+  }
+}
+
+vertex_program rviz/glsles/pickcolor.vert glsles
+{
+    source pickcolor.vert
+    syntax glsles
+    default_params
+    {
+        param_named_auto worldviewproj_matrix worldviewproj_matrix
+    }
+}
+
+
+fragment_program rviz/glsles/black.frag glsles
+{
+  source black.frag
+}
+
+vertex_program rviz/glsles/black.vert glsles
+{
+    source black.vert
+
+    // 定义输入和输出属性绑定
+    syntax glsles
+}
+
+vertex_program rviz/glsles/point.vert glsles
+{
+  source point.vert
+  default_params {
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto size custom          0
+  }
+}
+vertex_program rviz/glsles/point.vert(with_depth) glsles
+{
+  source point.vert
+  preprocessor_defines WITH_DEPTH=1
+  default_params {
+    param_named_auto worldviewproj_matrix worldviewproj_matrix
+    param_named_auto worldview_matrix worldview_matrix
+    param_named_auto size custom          0
+  }
+}
+
+
+
+fragment_program rviz/glsles/shaded_circle.frag glsles
+{
+  source shaded_circle.frag
+  default_params
+  {
+    param_named_auto highlight custom 5
+    param_named_auto alpha custom 1
+  }
+}
+
+
+fragment_program rviz/glsles/smooth_square.frag glsles
+{
+  source smooth_square.frag
+  default_params
+  {
+    param_named_auto highlight custom 5
+    param_named_auto alpha custom 1
+  }
+}
+

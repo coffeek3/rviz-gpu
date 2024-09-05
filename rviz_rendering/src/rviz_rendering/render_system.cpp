@@ -52,16 +52,36 @@
 #include "rviz_rendering/logging.hpp"
 #include "rviz_rendering/ogre_logging.hpp"
 #include "rviz_rendering/resource_config.hpp"
+#include <OgreSceneManager.h>
+#include <OgreRTShaderSystem.h>
+#include <OgreShaderGenerator.h>
 
 #include "string_helper.hpp"
+
+
+// using namespace Ogre;
+// using namespace OgreBites;
 
 namespace rviz_rendering
 {
 
-Ogre::GLPlugin * RenderSystem::render_system_gl_plugin_ = nullptr;
+// Ogre::GLPlugin * RenderSystem::render_system_gl_plugin_ = nullptr;
 RenderSystem * RenderSystem::instance_ = nullptr;
+std::mutex RenderSystem::obj_mutex_;
+
 int RenderSystem::force_gl_version_ = 0;
 bool RenderSystem::force_no_stereo_ = false;
+
+static EGLint const attribute_list[] = {
+        EGL_DEPTH_SIZE, 16,
+        // EGL_STENCIL_SIZE, 8,
+        EGL_NONE
+};
+
+static EGLint const context_attribs[] = {
+    EGL_CONTEXT_CLIENT_VERSION, 2,
+    EGL_NONE
+};
 
 // Disable anti aliasing on Windows for now,
 // since it breaks rendering as soon as two render windows are visible
@@ -75,9 +95,19 @@ bool RenderSystem::use_anti_aliasing_ = false;
 RenderSystem *
 RenderSystem::get()
 {
+  RVIZ_RENDERING_LOG_INFO_STREAM("RenderSystem, get instance_=" << instance_);
   if (instance_ == 0) {
+    obj_mutex_.lock();
+    RVIZ_RENDERING_LOG_INFO_STREAM("RenderSystem, in lock get instance_=" << instance_);
+
     rviz_rendering::OgreLogging::configureLogging();
     instance_ = new RenderSystem();
+
+    // Initialize OGRE
+    // instance_->initSetup();
+    // End of Initialize OGRE
+
+    obj_mutex_.unlock();
   }
   return instance_;
 }
@@ -135,7 +165,9 @@ RenderSystem::RenderSystem()
   setResourceDirectory();
   setPluginDirectory();
   setupDummyWindowId();
+  // RVIZ_RENDERING_LOG_INFO("RenderSystem setupDummyWindowId"");
   ogre_root_ = new Ogre::Root(get_resource_directory() + "/ogre_media/plugins.cfg");
+  RVIZ_RENDERING_LOG_INFO("RenderSystem plugins：" + get_resource_directory() + "/ogre_media/plugins.cfg");
 #if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2)
   ogre_overlay_system_ = new Ogre::OverlaySystem();
 #endif
@@ -149,20 +181,152 @@ RenderSystem::RenderSystem()
 }
 
 void
+RenderSystem::initSetup()
+{
+  RVIZ_RENDERING_LOG_INFO("RenderSystem initSetup");
+
+  RVIZ_RENDERING_LOG_INFO("RenderSystem setResourceDirectory");
+  setResourceDirectory();
+
+  RVIZ_RENDERING_LOG_INFO("RenderSystem setPluginDirectory");
+  setPluginDirectory();
+
+  RVIZ_RENDERING_LOG_INFO("RenderSystem initApp");
+  // do not forget to call the base first
+  // OgreBites::ApplicationContext::initApp();
+
+  // RVIZ_RENDERING_LOG_INFO("RenderSystem addInputListener");
+  // OgreBites::ApplicationContext::addInputListener(this);
+
+  // RVIZ_RENDERING_LOG_INFO("RenderSystem getRoot");
+  // ogre_root_ = OgreBites::ApplicationContext::getRoot();
+
+  RVIZ_RENDERING_LOG_INFO("RenderSystem loadOgrePlugins");
+  loadOgrePlugins();
+
+  RVIZ_RENDERING_LOG_INFO("RenderSystem setupRenderSystem");
+  setupRenderSystem();
+
+  RVIZ_RENDERING_LOG_INFO("RenderSystem detectGlVersion");
+  detectGlVersion();
+
+  RVIZ_RENDERING_LOG_INFO("RenderSystem setupResources");
+  setupResources();
+
+  RVIZ_RENDERING_LOG_INFO("RenderSystem initialiseAllResourceGroups");
+  Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+}
+
+void
 RenderSystem::prepareOverlays(Ogre::SceneManager * scene_manager)
 {
-#if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2)
-  if (ogre_overlay_system_) {
-    scene_manager->addRenderQueueListener(ogre_overlay_system_);
+  RVIZ_RENDERING_LOG_ERROR("RenderSystem::prepareOverlays, shouldn't run to here!");
+// #if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2)
+//   if (ogre_overlay_system_) {
+//     scene_manager->addRenderQueueListener(ogre_overlay_system_);
+//   }
+// #endif
+}
+
+EGLint RenderSystem::createEglEnv()
+{
+  Display* display = XOpenDisplay(nullptr);
+  EGLint num_configs(0);
+
+  RVIZ_RENDERING_LOG_INFO_STREAM("RenderSystem::createEglEnv, display=" << display);
+  if (display == nullptr)
+  {
+    RVIZ_RENDERING_LOG_WARNING("display is null, falling back on default :0");
+    display = XOpenDisplay(":0");
+
+    if (display == nullptr)
+    {
+      RVIZ_RENDERING_LOG_ERROR("Can't open default or :0 display. Try setting DISPLAY environment variable.");
+      throw std::runtime_error("Can't open default or :0 display!\n");
+    }
   }
-#endif
+
+  // Get the display device
+  if ((egl_display_ = eglGetDisplay(display)) == EGL_NO_DISPLAY) 
+  {
+    RVIZ_RENDERING_LOG_ERROR("RenderSystem::createEglEnv eglGetDisplay() failed");
+    return eglGetError();
+  }
+  RVIZ_RENDERING_LOG_INFO_STREAM("RenderSystem::createEglEnv eglGetDisplay success, egl_display=" << egl_display_);
+
+  // Initialize the display
+  if (eglInitialize(egl_display_, NULL, NULL) == EGL_FALSE)
+  {
+    RVIZ_RENDERING_LOG_ERROR("RenderSystem::createEglEnv eglInitialize() failed");
+    return eglGetError();
+  }
+  RVIZ_RENDERING_LOG_INFO("RenderSystem::createEglEnv eglInitialize success");
+
+  // Obtain the total number of configurations that match
+  if (eglChooseConfig(egl_display_, attribute_list, &egl_config_, 1, &num_configs) == EGL_FALSE)
+  {
+    RVIZ_RENDERING_LOG_ERROR("RenderSystem::createEglEnv eglChooseConfig() failed");
+    return eglGetError();
+  }
+  RVIZ_RENDERING_LOG_INFO_STREAM("RenderSystem::createEglEnv eglChooseConfig success, num_configs=" << num_configs);
+
+  if (num_configs == 0)
+  {
+    RVIZ_RENDERING_LOG_ERROR("RenderSystem::createEglEnv eglChooseConfig didn't return any configs\n");
+    return EGL_BAD_CONFIG;
+  }
+
+  if (eglBindAPI(EGL_OPENGL_ES_API) != EGL_TRUE)
+  {
+    RVIZ_RENDERING_LOG_ERROR("RenderSystem::createEglEnv eglBindAPI() failed");
+    return eglGetError();
+  }
+  RVIZ_RENDERING_LOG_INFO("RenderSystem::createEglEnv eglBindAPI EGL_OPENGL_ES_API success");
+
+  egl_context_ = eglCreateContext(egl_display_, egl_config_, EGL_NO_CONTEXT, context_attribs);
+  if (egl_context_ == EGL_NO_CONTEXT)
+  {
+    RVIZ_RENDERING_LOG_ERROR("RenderSystem::createEglEnv eglCreateContext() failed");
+    return eglGetError();
+  }
+  RVIZ_RENDERING_LOG_INFO_STREAM("RenderSystem::createEglEnv eglCreateContext success, egl_context=" << egl_context_);
+
+  // int screen = DefaultScreen(display);
+  // RVIZ_RENDERING_LOG_INFO_STREAM("RenderSystem::createEglEnv DefaultScreen =" << screen);
+  // if (!(dummy_window_id_ = XCreateSimpleWindow(display, RootWindow(display, screen), 0, 0, 1, 1, 0, 0, 0)))
+
+  if (!(dummy_window_id_ = XCreateSimpleWindow(display, DefaultRootWindow(display), 0, 0, 1, 1, 0, 0, 0)))
+  {
+    RVIZ_RENDERING_LOG_ERROR("RenderSystem::createEglEnv XCreateSimpleWindow() failed");
+    return EGL_BAD_NATIVE_WINDOW;
+  }
+  RVIZ_RENDERING_LOG_INFO_STREAM("RenderSystem::createEglEnv XCreateSimpleWindow success, windows id=" << dummy_window_id_);
+
+  egl_surface_ = eglCreateWindowSurface(egl_display_, egl_config_, (EGLNativeWindowType)dummy_window_id_, NULL);
+  if (egl_surface_ == EGL_NO_SURFACE)
+  {
+    RVIZ_RENDERING_LOG_ERROR("RenderSystem::createEglEnv eglCreateWindowSurface() failed");
+    return eglGetError();
+  }
+  RVIZ_RENDERING_LOG_INFO_STREAM("RenderSystem::createEglEnv eglCreateWindowSurface success, egl_surface=" << egl_surface_);
+
+  // connect the context to the surface
+  if (eglMakeCurrent(egl_display_, egl_surface_, egl_surface_, egl_context_) == EGL_FALSE)
+  {
+    RVIZ_RENDERING_LOG_ERROR("RenderSystem::createEglEnv eglCreateWindowSurface() failed");
+    return eglGetError();
+  }
+  RVIZ_RENDERING_LOG_INFO("RenderSystem::createEglEnv eglMakeCurrent success");
+
+  return EGL_SUCCESS;
 }
 
 void
 RenderSystem::setupDummyWindowId()
 {
   dummy_window_id_ = 0;
-#ifdef __linux__
+// #ifdef __linux__
+/*
   Display * display = XOpenDisplay(0);
   assert(display);
 
@@ -179,7 +343,17 @@ RenderSystem::setupDummyWindowId()
   GLXContext context = glXCreateContext(display, visual, nullptr, 1);
 
   glXMakeCurrent(display, dummy_window_id_, context);
-#endif
+*/
+
+  EGLint error = createEglEnv();
+  if (error != EGL_SUCCESS)
+  {
+    RVIZ_RENDERING_LOG_ERROR_STREAM("RenderSystem::setupDummyWindowId createEglEnv error=" << error);
+    throw std::runtime_error("Failed to create EGL Context!\n");
+  }
+  RVIZ_RENDERING_LOG_INFO("RenderSystem::createEglEnv EGL_SUCCESS");
+
+// #endif
 }
 
 void
@@ -189,7 +363,12 @@ RenderSystem::loadOgrePlugins()
 #if defined _WIN32 && !NDEBUG
   ogre_root_->loadPlugin(plugin_prefix + "RenderSystem_GL_d");
 #else
-  ogre_root_->loadPlugin(plugin_prefix + "RenderSystem_GL");
+  // RVIZ_RENDERING_LOG_INFO_STREAM("loadOgrePlugins, RenderSystem name= RenderSystem_GL");
+  // ogre_root_->loadPlugin(plugin_prefix + "RenderSystem_GL");
+  // RVIZ_RENDERING_LOG_INFO_STREAM("loadOgrePlugins2, RenderSystem name= RenderSystem_GL");
+  std::string render_plugin = plugin_prefix + "RenderSystem_GLES2";
+  ogre_root_->loadPlugin(render_plugin);
+  RVIZ_RENDERING_LOG_INFO_STREAM("loadOgrePlugins, RenderSystem name=" << render_plugin.c_str());
 #endif
   ogre_root_->loadPlugin(plugin_prefix + "Codec_STBI");
 // #if __APPLE__
@@ -213,6 +392,9 @@ RenderSystem::detectGlVersion()
     int major = caps->getDriverVersion().major;
     int minor = caps->getDriverVersion().minor;
     gl_version_ = major * 100 + minor * 10;
+    RVIZ_RENDERING_LOG_INFO_STREAM(
+    "OpenGl version major: " << major * 100 << " minor " << minor * 10
+  );
   }
 
   switch (gl_version_) {
@@ -256,13 +438,15 @@ RenderSystem::setupRenderSystem()
   for (const auto renderer : ogre_root_->getAvailableRenderers()) {
     renderers_msg += renderer->getName() + ",";
   }
-  RVIZ_RENDERING_LOG_DEBUG(renderers_msg.substr(0, renderers_msg.length() - 1));
+  RVIZ_RENDERING_LOG_INFO_STREAM(renderers_msg.substr(0, renderers_msg.length() - 1));
   std::vector<std::string> preferred_renderer_list = {
-    "OpenGL 3+",
-    "OpenGL"
+    "OpenGL ES",
+    "OpenGL ES 2.x",
   };
   for (auto renderer_token : preferred_renderer_list) {
     for (const auto renderer : ogre_root_->getAvailableRenderers()) {
+      std::string renderer_name = renderer->getName();
+      RVIZ_RENDERING_LOG_INFO_STREAM("setupRenderSystem, renderer name=" << renderer_name.c_str());
       if (renderer->getName().find(renderer_token) != Ogre::String::npos) {
         render_system = renderer;
         break;
@@ -291,7 +475,9 @@ RenderSystem::setResourceDirectory()
   std::string content;
   std::string prefix_path;
   ament_index_cpp::get_resource("packages", "rviz_rendering", content, &prefix_path);
+  RVIZ_RENDERING_LOG_INFO_STREAM("setResourceDirectory=" << prefix_path.c_str() << "/share/rviz_rendering");
   set_resource_directory(prefix_path + "/share/rviz_rendering");
+  RVIZ_RENDERING_LOG_ERROR(("set_resource_directory: " + prefix_path + "/share/rviz_rendering").c_str());
 }
 
 void
@@ -300,10 +486,12 @@ RenderSystem::setPluginDirectory()
   std::string content;
   std::string prefix_path;
   ament_index_cpp::get_resource("packages", "rviz_ogre_vendor", content, &prefix_path);
+  RVIZ_RENDERING_LOG_INFO_STREAM("setPluginDirectory=" << prefix_path.c_str() << "/opt/rviz_ogre_vendor/lib/OGRE/");
 #ifdef _WIN32
   set_ogre_plugin_directory(prefix_path + "\\opt\\rviz_ogre_vendor\\bin\\");
 #else
   set_ogre_plugin_directory(prefix_path + "/opt/rviz_ogre_vendor/lib/OGRE/");
+  RVIZ_RENDERING_LOG_ERROR(("set_ogre_plugin_directory: " + prefix_path + "/opt/rviz_ogre_vendor/lib/OGRE/").c_str());
 #endif
 }
 
@@ -326,11 +514,11 @@ RenderSystem::setupResources()
   Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
     rviz_path + "/ogre_media/materials/scripts", "FileSystem", "rviz_rendering");
   Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
-    rviz_path + "/ogre_media/materials/glsl120", "FileSystem", "rviz_rendering");
+    rviz_path + "/ogre_media/materials/glsles", "FileSystem", "rviz_rendering");
   Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
-    rviz_path + "/ogre_media/materials/glsl120/include", "FileSystem", "rviz_rendering");
+    rviz_path + "/ogre_media/materials/glsles/include", "FileSystem", "rviz_rendering");
   Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
-    rviz_path + "/ogre_media/materials/glsl120/nogp", "FileSystem", "rviz_rendering");
+    rviz_path + "/ogre_media/materials/glsles/nogp", "FileSystem", "rviz_rendering");
   // Add resources that depend on a specific glsl version.
   // Unfortunately, Ogre doesn't have a notion of glsl versions so we can't go
   // the 'official' way of defining multiple schemes per material and let Ogre
@@ -342,9 +530,10 @@ RenderSystem::setupResources()
   //   Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
   //     rviz_path + "/ogre_media/materials/scripts150", "FileSystem", "rviz_rendering");
   // } else if (getGlslVersion() >= 120) {
+  RVIZ_RENDERING_LOG_INFO_STREAM("getGlslVersion: " << getGlslVersion());
   if (getGlslVersion() >= 120) {
-    Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
-      rviz_path + "/ogre_media/materials/scripts120", "FileSystem", "rviz_rendering");
+    // Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
+    //   rviz_path + "/ogre_media/materials/scripts120", "FileSystem", "rviz_rendering");
   } else {
     std::string s =
       "Your graphics driver does not support OpenGL 2.1. "
@@ -355,7 +544,7 @@ RenderSystem::setupResources()
   }
 
   addAdditionalResourcesFromAmentIndex();
-  MaterialManager::createDefaultMaterials();
+  // MaterialManager::createDefaultMaterials();
 }
 
 void RenderSystem::addAdditionalResourcesFromAmentIndex() const
@@ -424,6 +613,8 @@ RenderSystem::makeRenderWindow(
   Ogre::RenderWindow * window = nullptr;
 
   params["currentGLContext"] = Ogre::String("false");
+  params["colourDepth"] = "16";
+  params["vsync"] = "true";  // 启用垂直同步
 
   if (window_id != 0) {
     params["externalWindowHandle"] = Ogre::StringConverter::toString(window_id);

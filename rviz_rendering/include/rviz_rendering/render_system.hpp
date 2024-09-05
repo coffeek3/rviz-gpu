@@ -33,12 +33,23 @@
 
 #include <cstdint>
 #include <string>
+#include <mutex>
 
-#include <OgreRoot.h>
+// #include <OgreRoot.h>
+#include "Ogre.h"
+#include <RTShaderSystem/OgreRTShaderSystem.h>
+#include <Bites/OgreApplicationContext.h>
+#include <Bites/OgreInput.h>
+
 #include <Overlay/OgreOverlaySystem.h>  // NOLINT cpplint cannot handle include order here
-#include <RenderSystems/GL/OgreGLPlugin.h>  // NOLINT cpplint cannot handle include order here
+// #include <RenderSystems/GL/OgreGLPlugin.h>  // NOLINT cpplint cannot handle include order here
 
 #include <QDir>  // NOLINT cpplint cannot handle include order here
+
+extern "C"
+{
+#include <EGL/egl.h>
+}
 
 #include "rviz_rendering/visibility_control.hpp"
 
@@ -106,6 +117,12 @@ private:
   RenderSystem();
 
   void
+  initSetup();
+
+  EGLint
+  createEglEnv();
+
+  void
   setupDummyWindowId();
 
   void
@@ -134,14 +151,22 @@ private:
   void
   detectGlVersion();
 
-  static Ogre::GLPlugin * render_system_gl_plugin_;
-
+  // static Ogre::GLPlugin * render_system_gl_plugin_;
   static RenderSystem * instance_;
+  static std::mutex obj_mutex_;
+
+  EGLDisplay egl_display_;
+  EGLConfig egl_config_;
+  EGLContext egl_context_;
+  EGLSurface egl_surface_;
 
   // ID for a dummy window of size 1x1, used to keep Ogre happy.
   WindowIDType dummy_window_id_;
 
   Ogre::Root * ogre_root_;
+  // Ogre:SceneManager* scnMgr_;
+  // Ogre::RTShader::ShaderGenerator* ogre_shadergen_;
+
   Ogre::OverlaySystem * ogre_overlay_system_;
 
   int gl_version_;

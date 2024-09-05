@@ -32,7 +32,10 @@
 
 #include <cstdint>
 #include <string>
+#include <stdlib.h>
+#include <ostream>
 
+#include <Ogre.h>
 #include <OgreEntity.h>
 #include <OgreMaterialManager.h>
 #include <OgreQuaternion.h>
@@ -41,6 +44,10 @@
 #include <OgreTechnique.h>
 #include <OgreTextureManager.h>
 #include <OgreVector3.h>
+#include <OgreRTShaderSystem.h>
+#include <OgrePass.h>
+#include <OgreShaderGenerator.h>
+#include <OgreShaderFFPRenderStateBuilder.h>
 
 #include "rviz_rendering/logging.hpp"
 #include "rviz_rendering/material_manager.hpp"
@@ -86,9 +93,180 @@ Shape::createEntity(
     name, mesh_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 }
 
+Ogre::MaterialPtr createRTSSMaterial(const std::string& materialName) {
+    Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(
+        materialName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    
+    Ogre::RTShader::ShaderGenerator* shaderGenerator = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+    Ogre::LogManager::getSingleton().setLogDetail(Ogre::LL_BOREME);
+    if (!shaderGenerator) {
+        Ogre::LogManager::getSingleton().logMessage("RTShader::ShaderGenerator not initialized!");
+        return material;
+    }
+
+    bool success = shaderGenerator->createShaderBasedTechnique(
+        *material, 
+        Ogre::MaterialManager::DEFAULT_SCHEME_NAME, 
+        Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+    
+    if (!success) {
+        Ogre::LogManager::getSingleton().logMessage("Failed to create shader-based technique for material: " + materialName);
+    } else {
+        Ogre::LogManager::getSingleton().logMessage("success to create shader-based technique for material: " + materialName);
+    }
+
+    success = shaderGenerator->validateMaterial(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME, materialName);
+    if (!success) {
+        Ogre::LogManager::getSingleton().logMessage("Failed to validate material: " + materialName);
+    }
+
+    return material;
+}
+
+// Shape::Shape(Type type, Ogre::SceneManager * scene_manager, Ogre::SceneNode * parent_node)
+// : Object(scene_manager), type_(type)
+// {
+//   static uint32_t count = 0;
+//   std::string entity_name = "Shape" + std::to_string(count++);
+
+//   entity_ = createEntity(entity_name, type, scene_manager);
+
+//   if (!parent_node) {
+//     parent_node = scene_manager_->getRootSceneNode();
+//   }
+
+//   scene_node_ = parent_node->createChildSceneNode();
+//   offset_node_ = scene_node_->createChildSceneNode();
+//   if (entity_) {
+//     offset_node_->attachObject(entity_);
+//   }
+
+//   // material_name_ = entity_name + "Material";
+//   material_name_ = "RTSS/DefaultMaterial";
+//   // material_ = MaterialManager::createMaterialWithLighting(material_name_);
+//   // material_->getTechnique(0)->setAmbient(0.5, 0.5, 0.5);
+
+//   if (Ogre::MaterialManager::getSingleton().resourceExists(material_name_)) {
+//     // 如果材质已经存在，直接使用
+//     material_ = Ogre::MaterialManager::getSingleton().getByName(material_name_);
+//   } else {
+//     // 创建新的材质
+//     material_ = createRTSSMaterial(material_name_);
+//     // material_->getTechnique(0)->setAmbient(0.5, 0.5, 0.5);
+//   }
+
+//   if (entity_) {
+//     entity_->setMaterialName(material_name_);
+//   }
+
+//   // 设置方案名称
+//   material_->getTechnique(0)->setSchemeName(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+
+// #if (OGRE_VERSION_MAJOR <= 1 && OGRE_VERSION_MINOR <= 4)
+//   if (entity_) {
+//     entity_->setNormaliseNormals(true);
+//   }
+// #endif
+// }
+
+// Shape::Shape(Type type, Ogre::SceneManager * scene_manager, Ogre::SceneNode * parent_node)
+// : Object(scene_manager), type_(type)
+// {
+//   static uint32_t count = 0;
+//   std::string entity_name = "Shape" + std::to_string(count++);
+
+//   entity_ = createEntity(entity_name, type, scene_manager);
+
+//   if (!parent_node) {
+//     parent_node = scene_manager_->getRootSceneNode();
+//   }
+
+//   scene_node_ = parent_node->createChildSceneNode();
+//   offset_node_ = scene_node_->createChildSceneNode();
+//   if (entity_) {
+//     offset_node_->attachObject(entity_);
+//   }
+
+//   material_name_ = entity_name + "Material";
+//   material_ = MaterialManager::createMaterialWithLighting(material_name_);
+//   material_->getTechnique(0)->setAmbient(0.5, 0.5, 0.5);
+
+//   if (entity_) {
+//     entity_->setMaterialName(material_name_);
+//   }
+
+// #if (OGRE_VERSION_MAJOR <= 1 && OGRE_VERSION_MINOR <= 4)
+//   if (entity_) {
+//     entity_->setNormaliseNormals(true);
+//   }
+// #endif
+// }
+
 Shape::Shape(Type type, Ogre::SceneManager * scene_manager, Ogre::SceneNode * parent_node)
 : Object(scene_manager), type_(type)
 {
+    static uint32_t count = 0;
+    std::string entity_name = "Shape" + std::to_string(count++);
+
+    // 创建实体
+    entity_ = createEntity(entity_name, type, scene_manager);
+
+    // 设置父节点
+    if (!parent_node) {
+        parent_node = scene_manager_->getRootSceneNode();
+    }
+
+    // 创建场景节点和偏移节点
+    scene_node_ = parent_node->createChildSceneNode();
+    offset_node_ = scene_node_->createChildSceneNode();
+    if (entity_) {
+        offset_node_->attachObject(entity_);
+    }
+
+    // 创建材质
+    material_name_ = entity_name + "Material";
+    // material_ = Ogre::MaterialManager::getSingleton().create(
+    //     material_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME
+    // );
+
+    material_ = MaterialManager::createMaterialWithLighting(material_name_);
+
+    // 设置固定管线效果中的环境光
+    material_->getTechnique(0)->setAmbient(0.5, 0.5, 0.5);
+
+    // 将材质应用到实体
+    if (entity_) {
+      entity_->setMaterialName(material_name_);
+      entity_->setMaterial(material_);
+    }
+
+    // Ogre::RTShader::ShaderGenerator* shaderGen = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+    
+    // bool success = shaderGen->createShaderBasedTechnique(
+    //     *material_, 
+    //     Ogre::MaterialManager::DEFAULT_SCHEME_NAME, 
+    //     Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+    // // 创建一个基于FFP状态的技术
+    // if (success) {
+    //     material_->getTechnique(0)->getPass(0)->setLightingEnabled(true);
+    //     Ogre::LogManager::getSingleton().logMessage("success to create shader-based technique for material: " + material_name_);
+    // } else {
+    //     Ogre::LogManager::getSingleton().logMessage("fai'l to create shader-based technique for material: " + material_name_);
+    // }
+
+#if (OGRE_VERSION_MAJOR <= 1 && OGRE_VERSION_MINOR <= 4)
+    // 设置法线归一化
+    if (entity_) {
+        entity_->setNormaliseNormals(true);
+    }
+#endif
+}
+
+
+Shape::Shape(Type type, Ogre::SceneManager * scene_manager, const std::string& material_name, Ogre::SceneNode * parent_node)
+: Object(scene_manager), type_(type)
+{
+  // initializeRTShaderSystem(scene_manager);
   static uint32_t count = 0;
   std::string entity_name = "Shape" + std::to_string(count++);
 
@@ -104,12 +282,17 @@ Shape::Shape(Type type, Ogre::SceneManager * scene_manager, Ogre::SceneNode * pa
     offset_node_->attachObject(entity_);
   }
 
-  material_name_ = entity_name + "Material";
-  material_ = MaterialManager::createMaterialWithLighting(material_name_);
+  // material_name_ = entity_name + "Material";
+  material_name_ = material_name;
+  // 修改
+  // material_ = MaterialManager::createMaterialWithLighting(material_name_);
+  material_ = createRTSSMaterial(material_name_);
   material_->getTechnique(0)->setAmbient(0.5, 0.5, 0.5);
 
   if (entity_) {
     entity_->setMaterialName(material_name_);
+    // 新增
+    entity_->setMaterial(material_);
   }
 
 #if (OGRE_VERSION_MAJOR <= 1 && OGRE_VERSION_MINOR <= 4)
@@ -128,16 +311,16 @@ Shape::~Shape()
     scene_manager_->destroyEntity(entity_);
   }
 
-  material_->unload();
-  Ogre::MaterialManager::getSingleton().remove(material_->getName(), ROS_PACKAGE_NAME);
+  // material_->unload();
+  // Ogre::MaterialManager::getSingleton().remove(material_->getName(), ROS_PACKAGE_NAME);
 }
 
 void Shape::setColor(const Ogre::ColourValue & c)
 {
-  material_->getTechnique(0)->setAmbient(c * 0.5);
-  material_->getTechnique(0)->setDiffuse(c);
+  // material_->getTechnique(0)->setAmbient(c * 0.5);
+  // material_->getTechnique(0)->setDiffuse(c);
 
-  rviz_rendering::MaterialManager::enableAlphaBlending(material_, c.a);
+  // rviz_rendering::MaterialManager::enableAlphaBlending(material_, c.a);
 }
 
 void Shape::setColor(float r, float g, float b, float a)

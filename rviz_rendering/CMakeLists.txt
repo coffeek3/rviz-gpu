@@ -31,6 +31,7 @@ find_package(ament_cmake REQUIRED)
 # do find_package(rviz_ogre_vendor) first to make sure the custom OGRE is found
 find_package(rviz_ogre_vendor REQUIRED)
 find_package(rviz_assimp_vendor REQUIRED)
+message("rviz_ogre_vendor:${rviz_ogre_vendor}")
 
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
 
@@ -95,14 +96,32 @@ add_library(rviz_rendering SHARED
   src/rviz_rendering/objects/wrench_visual.cpp
 )
 
+link_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/../install/opt/rviz_ogre_vendor/lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/../build/rviz_ogre_vendor/ogre_install/lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/../build/rviz_ogre_vendor/ogre-v1.12.1-prefix/src/ogre-v1.12.1/build/lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/../build/rviz_ogre_vendor/ogre-v1.12.1-prefix/src/ogre-v1.12.1/lib
+)
+
 target_link_libraries(rviz_rendering
   PUBLIC
+  stdc++
   rviz_ogre_vendor::OgreMain
   rviz_ogre_vendor::OgreOverlay
+  rviz_ogre_vendor::OgreBites
+  rviz_ogre_vendor::OgreRTShaderSystem
+  EGL
   Qt5::Widgets
   ament_index_cpp::ament_index_cpp
   resource_retriever::resource_retriever
 )
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../install/opt/rviz_ogre_vendor/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../install/opt/rviz_ogre_vendor/include/OGRE)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../install/opt/rviz_ogre_vendor/include/OGRE/Bites)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../install/opt/rviz_ogre_vendor/include/OGRE/RenderSystems)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../install/opt/rviz_ogre_vendor/include/OGRE/RTShaderSystem)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../build/rviz_ogre_vendor/ogre-v1.12.1-prefix/src/ogre-v1.12.1)
 
 target_include_directories(rviz_rendering
   PUBLIC
@@ -110,6 +129,7 @@ target_include_directories(rviz_rendering
     $<INSTALL_INTERFACE:include>
     ${Eigen3_INCLUDE_DIRS}
 )
+
 # Causes the visibility macros to use dllexport rather than dllimport,
 # which is appropriate when building the dll but not consuming it.
 target_compile_definitions(rviz_rendering PRIVATE "RVIZ_RENDERING_BUILDING_LIBRARY")

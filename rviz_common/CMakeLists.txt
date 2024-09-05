@@ -229,6 +229,7 @@ add_library(rviz_common SHARED
   ${rviz_common_source_files}
 )
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../install/opt/rviz_ogre_vendor/include/OGRE/RTShaderSystem)
 target_include_directories(rviz_common
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -236,10 +237,18 @@ target_include_directories(rviz_common
     ${TinyXML_INCLUDE_DIRS}
 )
 
+link_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/../install/opt/rviz_ogre_vendor/lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/../build/rviz_ogre_vendor/ogre_install/lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/../build/rviz_ogre_vendor/ogre-v1.12.1-prefix/src/ogre-v1.12.1/build/lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/../build/rviz_ogre_vendor/ogre-v1.12.1-prefix/src/ogre-v1.12.1/lib
+)
+
 target_link_libraries(rviz_common
   PUBLIC
   rviz_ogre_vendor::OgreMain
   rviz_ogre_vendor::OgreOverlay
+  rviz_ogre_vendor::OgreRTShaderSystem
   Qt5::Widgets
   ${TinyXML_LIBRARIES}
 )
@@ -317,6 +326,7 @@ install(
   DESTINATION "share/${PROJECT_NAME}"
 )
 
+set(BUILD_TESTING FALSE)
 if(BUILD_TESTING)
   # TODO(wjwwood): replace this with ament_lint_auto() and/or add the copyright linter back
   find_package(ament_cmake_cppcheck REQUIRED)

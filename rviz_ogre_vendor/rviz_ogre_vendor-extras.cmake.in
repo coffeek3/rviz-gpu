@@ -17,11 +17,13 @@ set(ZLIB_HOME "${rviz_ogre_vendor_DIR}/../../../opt/rviz_ogre_vendor")
 find_package(OGRE REQUIRED NO_SYSTEM_ENVIRONMENT_PATH)
 message(STATUS "OGRE_LIBRARIES: ${OGRE_LIBRARIES}")
 message(STATUS "OGRE_LIBRARY_DIRS: ${OGRE_LIBRARY_DIRS}")
+message(STATUS "OGRE_INCLUDE_DIRS: ${OGRE_INCLUDE_DIRS}")
 message(STATUS "OGRE_PLUGINS: ${OGRE_PLUGINS}")
 message(STATUS "OGRE_PLUGIN_DIR: ${OGRE_PLUGIN_DIR}")
 
 list(APPEND OGRE_LIBRARIES ${OGRE_PLUGINS})
 list(APPEND OGRE_LIBRARY_DIRS ${OGRE_PLUGIN_DIR})
+list(APPEND OGRE_INCLUDE_DIRS ${OGRE_INCLUDE_DIRS})
 
 foreach(_lib IN LISTS OGRE_LIBRARIES)
   # Remove debug suffix from library name for matching
@@ -288,4 +290,113 @@ foreach(_lib IN LISTS OGRE_LIBRARIES)
         "INTERFACE_LINK_LIBRARIES" "${_extra_interface_link_libraries}"
     )
   endif()
+
+  ## Add libOgreBites.so
+  if("OgreBitesStatic" STREQUAL ${_lib} OR "OgreBites" STREQUAL ${_lib})
+    find_library(_ogre_bites_static_library_abs ${_lib}
+      PATHS
+        ${OGRE_LIBRARY_DIRS}
+      NO_DEFAULT_PATH
+      NO_CMAKE_ENVIRONMENT_PATH
+      NO_CMAKE_PATH
+      NO_SYSTEM_ENVIRONMENT_PATH
+      NO_CMAKE_SYSTEM_PATH
+      NO_CMAKE_FIND_ROOT_PATH
+    )
+    find_library(_ogre_bites_static_library_debug_abs ${_lib}_d
+      PATHS
+        ${OGRE_LIBRARY_DIRS}
+      NO_DEFAULT_PATH
+      NO_CMAKE_ENVIRONMENT_PATH
+      NO_CMAKE_PATH
+      NO_SYSTEM_ENVIRONMENT_PATH
+      NO_CMAKE_SYSTEM_PATH
+      NO_CMAKE_FIND_ROOT_PATH
+    )
+    if(NOT _ogre_bites_static_library_debug_abs AND NOT WIN32)
+      # On macOS it seems the _d is not used, so just use the normal library name.
+      set(_ogre_bites_static_library_debug_abs ${_ogre_bites_static_library_abs})
+    endif()
+
+    add_library(rviz_ogre_vendor::OgreBites UNKNOWN IMPORTED)
+    message(STATUS "rviz_ogre_vendor::OgreBites for IMPORTED_LOCATION_RELEASE: ${_ogre_bites_static_library_abs}")
+    message(STATUS "rviz_ogre_vendor::OgreBites for IMPORTED_LOCATION_DEBUG: ${_ogre_bites_static_library_debug_abs}")
+    set_target_properties(rviz_ogre_vendor::OgreBites
+      PROPERTIES
+        IMPORTED_LOCATION_RELEASE ${_ogre_bites_static_library_abs}
+        IMPORTED_LOCATION_DEBUG ${_ogre_bites_static_library_debug_abs}
+    )
+
+    set_property(TARGET rviz_ogre_vendor::OgreBites
+      PROPERTY
+        INTERFACE_INCLUDE_DIRECTORIES ${OGRE_INCLUDE_DIRS}
+    )
+    if(_ogre_bites_static_library_abs)
+      set_property(TARGET rviz_ogre_vendor::OgreBites APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+    endif()
+    if(_ogre_bites_static_library_debug_abs)
+      set_property(TARGET rviz_ogre_vendor::OgreBites APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
+    endif()
+
+    set(_extra_interface_link_libraries rviz_ogre_vendor::OgreMain)
+    set_target_properties(rviz_ogre_vendor::OgreBites
+      PROPERTIES
+        "INTERFACE_LINK_LIBRARIES" "${_extra_interface_link_libraries}"
+    )
+  endif()
+
+  ## Add libRTShaderSystem.so
+  if("OgreRTShaderSystemStatic" STREQUAL ${_lib} OR "OgreRTShaderSystem" STREQUAL ${_lib})
+    find_library(_ogre_rt_shader_system_static_library_abs ${_lib}
+      PATHS
+        ${OGRE_LIBRARY_DIRS}
+      NO_DEFAULT_PATH
+      NO_CMAKE_ENVIRONMENT_PATH
+      NO_CMAKE_PATH
+      NO_SYSTEM_ENVIRONMENT_PATH
+      NO_CMAKE_SYSTEM_PATH
+      NO_CMAKE_FIND_ROOT_PATH
+    )
+    find_library(_ogre_rt_shader_system_static_library_debug_abs ${_lib}_d
+      PATHS
+        ${OGRE_LIBRARY_DIRS}
+      NO_DEFAULT_PATH
+      NO_CMAKE_ENVIRONMENT_PATH
+      NO_CMAKE_PATH
+      NO_SYSTEM_ENVIRONMENT_PATH
+      NO_CMAKE_SYSTEM_PATH
+      NO_CMAKE_FIND_ROOT_PATH
+    )
+    if(NOT _ogre_rt_shader_system_static_library_debug_abs AND NOT WIN32)
+      # On macOS it seems the _d is not used, so just use the normal library name.
+      set(_ogre_rt_shader_system_static_library_debug_abs ${_ogre_rt_shader_system_static_library_abs})
+    endif()
+
+    add_library(rviz_ogre_vendor::OgreRTShaderSystem UNKNOWN IMPORTED)
+    message(STATUS "rviz_ogre_vendor::OgreRTShaderSystem for IMPORTED_LOCATION_RELEASE: ${_ogre_rt_shader_system_static_library_abs}")
+    message(STATUS "rviz_ogre_vendor::OgreRTShaderSystem for IMPORTED_LOCATION_DEBUG: ${_ogre_rt_shader_system_static_library_debug_abs}")
+    set_target_properties(rviz_ogre_vendor::OgreRTShaderSystem
+      PROPERTIES
+        IMPORTED_LOCATION_RELEASE ${_ogre_rt_shader_system_static_library_abs}
+        IMPORTED_LOCATION_DEBUG ${_ogre_rt_shader_system_static_library_debug_abs}
+    )
+
+    set_property(TARGET rviz_ogre_vendor::OgreRTShaderSystem
+      PROPERTY
+        INTERFACE_INCLUDE_DIRECTORIES ${OGRE_INCLUDE_DIRS}
+    )
+    if(_ogre_rt_shader_system_static_library_abs)
+      set_property(TARGET rviz_ogre_vendor::OgreRTShaderSystem APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+    endif()
+    if(_ogre_rt_shader_system_static_library_debug_abs)
+      set_property(TARGET rviz_ogre_vendor::OgreRTShaderSystem APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
+    endif()
+
+    set(_extra_interface_link_libraries rviz_ogre_vendor::OgreMain)
+    set_target_properties(rviz_ogre_vendor::OgreRTShaderSystem
+      PROPERTIES
+        "INTERFACE_LINK_LIBRARIES" "${_extra_interface_link_libraries}"
+    )
+  endif()
+
 endforeach()

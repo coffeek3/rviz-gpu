@@ -31,9 +31,14 @@
 #include "rviz_rendering/material_manager.hpp"
 
 #include <string>
-
+#include <Ogre.h>
 #include <OgreMaterial.h>
 #include <OgreTechnique.h>
+
+#include <OgreTechnique.h>
+#include <OgreRTShaderSystem.h>
+#include <OgrePass.h>
+#include <OgreShaderGenerator.h>
 
 namespace rviz_rendering
 {
@@ -69,6 +74,20 @@ Ogre::MaterialPtr MaterialManager::createMaterialWithNoLighting(std::string name
   material->setReceiveShadows(false);
   material->getTechnique(0)->setLightingEnabled(false);
 
+  Ogre::RTShader::ShaderGenerator* shaderGen = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+    
+  bool success = shaderGen->createShaderBasedTechnique(
+    *material, 
+      Ogre::MaterialManager::DEFAULT_SCHEME_NAME, 
+      Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+  // 创建一个基于FFP状态的技术
+  if (success) {
+      material->getTechnique(0)->getPass(0)->setLightingEnabled(false);
+      Ogre::LogManager::getSingleton().logMessage("success to create shader-based technique for material: " + name);
+  } else {
+      Ogre::LogManager::getSingleton().logMessage("fail to create shader-based technique for material: " + name);
+  }
+
   return material;
 }
 
@@ -77,6 +96,20 @@ Ogre::MaterialPtr MaterialManager::createMaterialWithLighting(std::string name)
   Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(name, "rviz_rendering");
   material->setReceiveShadows(false);
   material->getTechnique(0)->setLightingEnabled(true);
+
+  Ogre::RTShader::ShaderGenerator* shaderGen = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+    
+  bool success = shaderGen->createShaderBasedTechnique(
+      *material, 
+      Ogre::MaterialManager::DEFAULT_SCHEME_NAME, 
+      Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+  // 创建一个基于FFP状态的技术
+  if (success) {
+      material->getTechnique(0)->getPass(0)->setLightingEnabled(true);
+      Ogre::LogManager::getSingleton().logMessage("success to create shader-based technique for material: " + name);
+  } else {
+      Ogre::LogManager::getSingleton().logMessage("fai'l to create shader-based technique for material: " + name);
+  }
 
   return material;
 }
@@ -93,6 +126,21 @@ Ogre::MaterialPtr MaterialManager::createMaterialWithShadowsAndNoLighting(std::s
 {
   Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(name, "rviz_rendering");
   material->getTechnique(0)->setLightingEnabled(false);
+
+  Ogre::RTShader::ShaderGenerator* shaderGen = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+    
+  bool success = shaderGen->createShaderBasedTechnique(
+    *material, 
+      Ogre::MaterialManager::DEFAULT_SCHEME_NAME, 
+      Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+  // 创建一个基于FFP状态的技术
+  if (success) {
+      material->getTechnique(0)->getPass(0)->setLightingEnabled(false);
+      Ogre::LogManager::getSingleton().logMessage("success to create shader-based technique for material: " + name);
+  } else {
+      Ogre::LogManager::getSingleton().logMessage("fail to create shader-based technique for material: " + name);
+  }
+
 
   return material;
 }
@@ -125,6 +173,19 @@ void MaterialManager::createDefaultMaterials()
   auto material = Ogre::MaterialManager::getSingleton().create(
     "BaseWhiteNoLighting", "rviz_rendering");
   material->setLightingEnabled(false);
+  Ogre::RTShader::ShaderGenerator* shaderGen = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+    
+  bool success = shaderGen->createShaderBasedTechnique(
+    *material, 
+      Ogre::MaterialManager::DEFAULT_SCHEME_NAME, 
+      Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+  // 创建一个基于FFP状态的技术
+  if (success) {
+      Ogre::LogManager::getSingleton().logMessage("success to create shader-based technique for material: BaseWhiteNoLighting");
+  } else {
+      Ogre::LogManager::getSingleton().logMessage("fail to create shader-based technique for material: BaseWhiteNoLighting");
+  }
+
 }
 
 }  // namespace rviz_rendering

@@ -38,6 +38,7 @@
 #include <utility>
 #include <vector>
 
+#include <Ogre.h>
 #include <OgreCamera.h>
 #include <OgreHardwarePixelBuffer.h>
 #include <OgreRectangle2D.h>
@@ -47,6 +48,10 @@
 #include <OgreTechnique.h>
 #include <OgreTextureManager.h>
 #include <OgreViewport.h>
+#include <OgreVector3.h>
+#include <OgreRTShaderSystem.h>
+#include <OgrePass.h>
+#include <OgreShaderGenerator.h>
 
 #include <QTimer>  // NOLINT: cpplint is unable to handle the include order here
 
@@ -158,6 +163,20 @@ void SelectionManager::initialize()
 
   Ogre::MaterialPtr material =
     rviz_rendering::MaterialManager::createMaterialWithShadowsAndNoLighting(name);
+
+  Ogre::RTShader::ShaderGenerator* shaderGen = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+  
+  bool success = shaderGen->createShaderBasedTechnique(
+      *material, 
+      Ogre::MaterialManager::DEFAULT_SCHEME_NAME, 
+      Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+  // 创建一个基于FFP状态的技术
+  if (success) {
+      Ogre::LogManager::getSingleton().logMessage("success to create shader-based technique for material: " + name);
+  } else {
+      Ogre::LogManager::getSingleton().logMessage("fai'l to create shader-based technique for material: " + name);
+  }
+
   highlight_rectangle_->setMaterial(material);
   Ogre::AxisAlignedBox aabInf;
   aabInf.setInfinite();
