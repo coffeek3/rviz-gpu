@@ -41,45 +41,14 @@ if(Qt5_FOUND AND WIN32 AND TARGET Qt5::qmake AND NOT TARGET Qt5::windeployqt)
 endif()
 
 add_executable(${PROJECT_NAME}
- src/main.cpp
+  src/main.cpp
 )
-
-# add_executable(${PROJECT_NAME}
-#   src/test.cpp
-# )
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../install/opt/rviz_ogre_vendor/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../install/opt/rviz_ogre_vendor/include/OGRE)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../install/opt/rviz_ogre_vendor/include/OGRE/Bites)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../install/opt/rviz_ogre_vendor/include/OGRE/RenderSystems)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../install/opt/rviz_ogre_vendor/include/OGRE/RTShaderSystem)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../build/rviz_ogre_vendor/ogre-v1.12.1-prefix/src/ogre-v1.12.1)
-
-# add_executable(${PROJECT_NAME} src/BasicTutorial1.cpp)
-# target_link_libraries(1_FirstScene ${OGRE_LIBRARIES})
-
-
-link_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/../install/opt/rviz_ogre_vendor/lib
-    ${CMAKE_CURRENT_SOURCE_DIR}/../build/rviz_ogre_vendor/ogre_install/lib
-    ${CMAKE_CURRENT_SOURCE_DIR}/../build/rviz_ogre_vendor/ogre-v1.12.1-prefix/src/ogre-v1.12.1/build/lib
-    ${CMAKE_CURRENT_SOURCE_DIR}/../build/rviz_ogre_vendor/ogre-v1.12.1-prefix/src/ogre-v1.12.1/lib
-)
-
 target_link_libraries(${PROJECT_NAME}
   rviz_common::rviz_common
   rviz_ogre_vendor::OgreMain
   rviz_ogre_vendor::OgreOverlay
   Qt5::Widgets
 )
-
-# target_link_libraries(${PROJECT_NAME}
-#   rviz_common::rviz_common
-#   rviz_ogre_vendor::OgreMain
-#   rviz_ogre_vendor::OgreOverlay
-#   rviz_ogre_vendor::OgreBites
-#   rviz_ogre_vendor::OgreRTShaderSystem
-# )
 
 # TODO(wjwwood): find a way to make this optional or to run without "deploying" the
 #                necessary dlls and stuff to the bin folder.
@@ -115,16 +84,16 @@ install(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   # TODO(wjwwood): replace this with ament_lint_auto() and/or add the copyright linter back
-  #find_package(ament_cmake_cppcheck REQUIRED)
-  #find_package(ament_cmake_cpplint REQUIRED)
-  #find_package(ament_cmake_lint_cmake REQUIRED)
-  #find_package(ament_cmake_uncrustify REQUIRED)
-  #ament_cppcheck()
-  #ament_cpplint()
-  #ament_lint_cmake()
-  #ament_uncrustify()
+  find_package(ament_cmake_cppcheck REQUIRED)
+  find_package(ament_cmake_cpplint REQUIRED)
+  find_package(ament_cmake_lint_cmake REQUIRED)
+  find_package(ament_cmake_uncrustify REQUIRED)
+  ament_cppcheck()
+  ament_cpplint()
+  ament_lint_cmake()
+  ament_uncrustify()
 
-  #add_subdirectory(test)
+  add_subdirectory(test)
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)

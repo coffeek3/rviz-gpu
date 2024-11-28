@@ -34,7 +34,6 @@
 #include <string>
 #include <utility>
 
-#include <Ogre.h>
 #include <OgreCamera.h>
 #include <OgreHardwarePixelBuffer.h>
 #include <OgreMaterialManager.h>
@@ -45,8 +44,8 @@
 #include <OgreTechnique.h>
 #include <OgreTextureManager.h>
 #include <OgreViewport.h>
+#include <OgreRTShaderSystem.h>
 #include <OgrePass.h>
-#include <OgreShaderGenerator.h>
 
 #include <QTimer>  // NOLINT: cpplint is unable to handle the include order here
 
@@ -73,19 +72,6 @@ void SelectionRenderer::initialize(Ogre::Camera * camera, Ogre::SceneManager * s
 
   fallback_pick_material_ = Ogre::MaterialManager::getSingleton().getByName(
     "rviz/DefaultPickAndDepth");
-  Ogre::LogManager::getSingleton().logMessage("success to load material 'rviz/DefaultPickAndDepth'");
-  
-  // Ogre::RTShader::ShaderGenerator* shaderGen = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
-  // bool success = shaderGen->createShaderBasedTechnique(
-  //     *fallback_pick_material_, 
-  //     Ogre::MaterialManager::DEFAULT_SCHEME_NAME, 
-  //     Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
-  // if (success) {
-  //     Ogre::LogManager::getSingleton().logMessage("success to create shader-based technique for material: rviz/DefaultPickAndDepth");
-  // } else {
-  //     Ogre::LogManager::getSingleton().logMessage("fai'l to create shader-based technique for material: rviz/DefaultPickAndDepth");
-  // }
-
   if (fallback_pick_material_) {
     fallback_pick_material_->load();
 
@@ -96,9 +82,16 @@ void SelectionRenderer::initialize(Ogre::Camera * camera, Ogre::SceneManager * s
     fallback_pick_technique_ = fallback_pick_material_->getTechnique("Pick");
     fallback_black_technique_ = fallback_pick_material_->getTechnique("Black");
     fallback_depth_technique_ = fallback_pick_material_->getTechnique("Depth");
-    Ogre::LogManager::getSingleton().logMessage("success to load technique_ 'rviz/DefaultPickAndDepth'");
+
+    // // 通过FFPRenderStateBuilder为材质生成着色器
+    // Ogre::RTShader::RenderState* renderState = 
+    //     Ogre::RTShader::ShaderGenerator::getSingletonPtr()->getRenderState(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME, fallback_pick_material_->getName());
+
+    // // 使用FFP渲染状态构建器生成状态
+    // Ogre::RTShader::FFPRenderStateBuilder builder;
+    // builder.build(renderState);
   } else {
-    Ogre::LogManager::getSingleton().logMessage("failed to load material 'rviz/DefaultPickAndDepth'");
+    RVIZ_COMMON_LOG_ERROR("failed to load material 'rviz/DefaultPickAndDepth'");
   }
 }
 
@@ -298,17 +291,7 @@ void SelectionRenderer::renderQueueStarted(
   Q_UNUSED(invocation);
   // This render queue listener function tells the scene manager to
   // skip every render step, so nothing actually gets drawn.
-  // skipThisInvocation = true;
-  // 确保固定管线模拟下不跳过渲染
-  // 检查是否存在顶点着色器的数量
-  if (!Ogre::RTShader::ShaderGenerator::getSingletonPtr()->getShaderCount(Ogre::GPT_VERTEX_PROGRAM)) {
-    skipThisInvocation = true;
-  }
-
-  // 或者检查片段着色器的数量
-  if (!Ogre::RTShader::ShaderGenerator::getSingletonPtr()->getShaderCount(Ogre::GPT_FRAGMENT_PROGRAM)) {
-    skipThisInvocation = true;
-  }
+  skipThisInvocation = true;
 }
 
 Ogre::Technique * SelectionRenderer::handleSchemeNotFound(
@@ -326,7 +309,7 @@ Ogre::Technique * SelectionRenderer::handleSchemeNotFound(
   if (orig_tech && orig_tech->getNumPasses() > 0) {
     culling_mode = orig_tech->getPass(0)->getCullingMode();
   }
-  // Ogre::LogManager::getSingleton().logMessage("electionRenderer::handleSchemeNotFound");
+
   // find out if the renderable has the picking param set
   bool has_pick_param = rend->getUserObjectBindings().getUserAny("pick_handle").has_value();
 
@@ -340,32 +323,24 @@ Ogre::Technique * SelectionRenderer::handleSchemeNotFound(
   // Use the technique with the right name and culling mode.
   if (culling_mode == Ogre::CULL_CLOCKWISE) {
     if (scheme_name == "Pick") {
-      // Ogre::LogManager::getSingleton().logMessage("electionRenderer::handleSchemeNotFound CULL_CLOCKWISE Pick");
       return has_pick_param ? fallback_pick_cull_technique_ : fallback_black_cull_technique_;
     } else if (scheme_name == "Depth") {
-      // Ogre::LogManager::getSingleton().logMessage("electionRenderer::handleSchemeNotFound  CULL_CLOCKWISE Depth");
       return fallback_depth_cull_technique_;
     }
     if (scheme_name == "Pick1") {
-      // Ogre::LogManager::getSingleton().logMessage("electionRenderer::handleSchemeNotFound  CULL_CLOCKWISE Pick1");
       return fallback_black_cull_technique_;
     } else {
-      // Ogre::LogManager::getSingleton().logMessage("electionRenderer::handleSchemeNotFound CULL_CLOCKWISE nullptr");
       return nullptr;
     }
   } else {  // Must be CULL_NONE because we never use CULL_ANTICLOCKWISE
     if (scheme_name == "Pick") {
-      // Ogre::LogManager::getSingleton().logMessage("electionRenderer::handleSchemeNotFound Pick");
       return has_pick_param ? fallback_pick_technique_ : fallback_black_technique_;
     } else if (scheme_name == "Depth") {
-      // Ogre::LogManager::getSingleton().logMessage("electionRenderer::handleSchemeNotFound Depth");
       return fallback_depth_technique_;
     }
     if (scheme_name == "Pick1") {
-      // Ogre::LogManager::getSingleton().logMessage("electionRenderer::handleSchemeNotFound Pick1");
       return fallback_black_technique_;
     } else {
-      // Ogre::LogManager::getSingleton().logMessage("electionRenderer::handleSchemeNotFound nullptr");
       return nullptr;
     }
   }

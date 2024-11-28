@@ -175,6 +175,7 @@ private:
   static int force_gl_version_;
   bool stereo_supported_;
   static bool force_no_stereo_;
+  Ogre::RenderWindow * window = nullptr;
 };
 
 }  // namespace rviz_rendering

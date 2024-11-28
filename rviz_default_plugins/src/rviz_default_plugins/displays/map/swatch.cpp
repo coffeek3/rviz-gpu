@@ -42,6 +42,7 @@
 #include <OgreSharedPtr.h>
 #include <OgreTechnique.h>
 #include <OgreTextureManager.h>
+#include <Ogre.h>
 
 #include "rviz_rendering/custom_parameter_indices.hpp"
 
@@ -198,6 +199,7 @@ void Swatch::resetTexture(Ogre::DataStreamPtr & pixel_stream)
     "rviz_rendering",
     pixel_stream,
     static_cast<uint16_t>(width_), static_cast<uint16_t>(height_),
+    // Ogre::PF_R8, Ogre::TEX_TYPE_2D, 0);
     Ogre::PF_L8, Ogre::TEX_TYPE_2D, 0);
 }
 
@@ -211,6 +213,7 @@ void Swatch::setupMaterial()
   material_->setDepthBias(-16.0f, 0.0f);
   material_->setCullingMode(Ogre::CULL_NONE);
   material_->setDepthWriteEnabled(false);
+  material_->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
 }
 
 void Swatch::setupSceneNodeWithManualObject()

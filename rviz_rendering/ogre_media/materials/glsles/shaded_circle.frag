@@ -1,5 +1,6 @@
 #version 100
-precision mediump float;  // 定义浮点精度
+precision mediump int;
+precision mediump float;
 
 // rasterizes a circle that is darker at the borders than in the center
 
@@ -22,4 +23,5 @@ void main()
     col = col + col * highlight.xyz;
     
     gl_FragColor = vec4(col, alpha * ceil(a) * v_color.a);
+    // gl_FragColor = vec4(1.0,0,0,1);
 }

@@ -1,5 +1,6 @@
 #version 100
-precision mediump float;  // 定义浮点精度
+precision mediump int;
+precision mediump float;
 
 const float minimum_alpha = 1.0 / 255.0;
 uniform float alpha;
@@ -35,4 +36,5 @@ void circleImpl( vec4 color, float ax, float ay )
 void main()
 {
     circleImpl( packDepth(), v_texCoord.x-0.5, v_texCoord.y-0.5 );
+    // gl_FragColor = vec4(1.0, 0,0, 1.0);
 }

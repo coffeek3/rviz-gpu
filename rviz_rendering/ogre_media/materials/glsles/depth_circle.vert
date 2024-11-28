@@ -1,10 +1,10 @@
-// GLSL ES 2.0 顶点着色器
 #version 100
-precision mediump float;  // 定义浮点精度
+precision mediump int;
+precision mediump float;
 
 // 输入顶点位置和纹理坐标
 attribute vec4 a_position;  // 顶点位置
-attribute vec2 a_texCoord;  // 纹理坐标
+attribute vec2 uv0;  // 纹理坐标
 
 // 用于传递给片段着色器的varying变量
 varying vec2 v_texCoord;    // 插值后的纹理坐标
@@ -21,7 +21,7 @@ void main()
     gl_Position = worldviewproj_matrix * a_position;
 
     // 将纹理坐标传递给片段着色器
-    v_texCoord = a_texCoord;
+    v_texCoord = uv0;
 
     // 计算深度值并将其传递给片段着色器
     v_depth = gl_Position.z / gl_Position.w;

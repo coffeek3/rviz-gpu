@@ -153,7 +153,10 @@ Ogre::TexturePtr makePaletteTexture(std::vector<unsigned char> palette_bytes)
   static int palette_tex_count = 0;
   std::string tex_name = "MapPaletteTexture" + std::to_string(palette_tex_count++);
   return Ogre::TextureManager::getSingleton().loadRawData(
-    tex_name, "rviz_rendering", palette_stream, 256, 1, Ogre::PF_BYTE_RGBA, Ogre::TEX_TYPE_1D, 0);
+    tex_name, "rviz_rendering", palette_stream, 256, 1, Ogre::PF_BYTE_RGBA, Ogre::TEX_TYPE_2D, 0);
+    // tex_name, "rviz_rendering", palette_stream, 256, 1, Ogre::PF_R8, Ogre::TEX_TYPE_2D, 0);
+    // tex_name, "rviz_rendering", palette_stream, 256, 1, Ogre::PF_BYTE_RGBA, Ogre::TEX_TYPE_1D, 0);
+    // tex_name, "rviz_rendering", palette_stream, 256, 1, Ogre::PF_L8, Ogre::TEX_TYPE_2D, 0);
 }
 
 MapDisplay::MapDisplay(rviz_common::DisplayContext * context)

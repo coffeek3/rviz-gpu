@@ -45,6 +45,10 @@
 #include <OgreTextureManager.h>
 #include <OgreSharedPtr.h>
 #include <OgreTechnique.h>
+#include <OgreRTShaderSystem.h>
+#include <OgrePass.h>
+#include <OgreShaderGenerator.h>
+#include <Ogre.h>
 
 #include <QFileInfo>  // NOLINT cpplint cannot handle include order here
 
@@ -197,7 +201,7 @@ RobotLink::RobotLink(
 
   // create material for coloring links
   static int count = 1;
-  std::string color_material_name = "robot link color material " + std::to_string(count++);
+  std::string color_material_name = "robot_link_color_material " + std::to_string(count++);
 
   color_material_ =
     rviz_rendering::MaterialManager::createMaterialWithLighting(color_material_name);
@@ -633,6 +637,22 @@ Ogre::Entity * RobotLink::createEntityForGeometryElement(
   return entity;
 }
 
+void rtssMaterialClone(const Ogre::MaterialPtr clonedMaterial) {
+  Ogre::RTShader::ShaderGenerator* shaderGen = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+  bool success = shaderGen->createShaderBasedTechnique(
+      *clonedMaterial,
+      Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
+      Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+
+  if (success) {
+      clonedMaterial->getTechnique(0)->getPass(0)->setLightingEnabled(true);
+      Ogre::LogManager::getSingleton().logMessage("Successfully created RTSS technique for cloned material.");
+  } else {
+      Ogre::LogManager::getSingleton().logMessage("Failed to create RTSS technique for cloned material.");
+  }
+
+}
+
 void RobotLink::assignMaterialsToEntities(
   const urdf::LinkConstSharedPtr & link,
   const std::string & material_name,
@@ -655,6 +675,7 @@ void RobotLink::assignMaterialsToEntities(
       default_material_->getName() + "_" + std::to_string(material_count++) + "Robot";
 
     default_material_ = default_material_->clone(cloned_name);
+    rtssMaterialClone(default_material_);
     default_material_name_ = default_material_->getName();
 
     // Assign materials only if the submesh does not have one already
@@ -670,7 +691,8 @@ void RobotLink::assignMaterialsToEntities(
       // this can go away
       std::string sub_cloned_name =
         sub_material_name + "_" + std::to_string(material_count++) + "Robot";
-      sub->getMaterial()->clone(sub_cloned_name);
+      Ogre::MaterialPtr sub_material = sub->getMaterial()->clone(sub_cloned_name);
+      rtssMaterialClone(sub_material);
       sub->setMaterialName(sub_cloned_name);
     }
 

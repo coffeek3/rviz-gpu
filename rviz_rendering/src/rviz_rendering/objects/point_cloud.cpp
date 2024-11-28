@@ -49,6 +49,11 @@
 #include <OgreTechnique.h>
 #include <OgreCamera.h>
 
+#include <Ogre.h>
+#include <OgreSceneManager.h>
+#include <OgreRTShaderSystem.h>
+#include <OgreShaderGenerator.h>
+
 #include "rviz_rendering/custom_parameter_indices.hpp"
 #include "rviz_rendering/logging.hpp"
 #include "rviz_rendering/material_manager.hpp"
@@ -212,10 +217,10 @@ PointCloud::PointCloud()
   std::stringstream ss;
   static int count = 0;
   ss << "PointCloudMaterial" << count++;
+
   point_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudPoint");
   square_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudSquare");
-  flat_square_material_ = Ogre::MaterialManager::getSingleton().getByName(
-    "rviz/PointCloudFlatSquare");
+  flat_square_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudFlatSquare");
   sphere_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudSphere");
   tile_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudTile");
   box_material_ = Ogre::MaterialManager::getSingleton().getByName("rviz/PointCloudBox");
@@ -227,12 +232,12 @@ PointCloud::PointCloud()
   tile_material_ = Ogre::MaterialPtr(tile_material_)->clone(ss.str() + "Tiles");
   box_material_ = Ogre::MaterialPtr(box_material_)->clone(ss.str() + "Box");
 
-  point_material_->load();
-  square_material_->load();
-  flat_square_material_->load();
-  sphere_material_->load();
-  tile_material_->load();
-  box_material_->load();
+  // point_material_->load();
+  // square_material_->load();
+  // flat_square_material_->load();
+  // sphere_material_->load();
+  // tile_material_->load();
+  // box_material_->load();
 
   setAlpha(1.0f);
   setRenderMode(RM_SPHERES);
@@ -339,9 +344,32 @@ void PointCloud::setHighlightColor(float r, float g, float b)
 void PointCloud::setRenderMode(RenderMode mode)
 {
   render_mode_ = mode;
-
   current_material_ = getMaterialForRenderMode(mode);
+  // current_material_->load();
+  // current_material_->setMaterialName(material_name_);
+
+  // 确保材质的技术使用非 RTSS 方案
+  // Ogre::MaterialManager::getSingleton().setActiveScheme("rviz");
+  // current_material_->getTechnique(0)->setSchemeName("rviz");
   current_material_->load();
+  
+  // // 禁止为材质生成 RTSS 技术
+  // Ogre::RTShader::ShaderGenerator* shaderGen = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+  // shaderGen->removeAllShaderBasedTechniques(current_material_->getName(), current_material_->getGroup());
+  
+  // bool success = shaderGen->createShaderBasedTechnique(
+  //   *current_material_, 
+  //     Ogre::MaterialManager::DEFAULT_SCHEME_NAME, 
+  //     Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+  // // // 创建一个基于FFP状态的技术
+  // // if (success) {
+  // //     current_material_->getTechnique(0)->getPass(0)->setLightingEnabled(true);
+  //     Ogre::LogManager::getSingleton().logError("success to create shader-based technique for material: " + current_material_->getName());
+  // // } else {
+  // //     Ogre::LogManager::getSingleton().logMessage("fail to create shader-based technique for material: " + current_material_->getName());
+  // // }
+   
+  
 
   if (changingGeometrySupportIsNecessary(current_material_)) {
     renderables_.clear();
@@ -578,12 +606,26 @@ PointCloud::addPointToHardwareBuffer(
   std::vector<PointCloud::Point>::iterator point, uint32_t current_point)
 {
   uint32_t color = getColorForPoint(current_point, point);
+
+  // float r = ((color >> 16) & 0xFF) / 255.0f;
+  // float g = ((color >> 8) & 0xFF) / 255.0f;
+  // float b = (color & 0xFF) / 255.0f;
+  // float a = 1.0f;
+
+
   float * vertices = getVertices();
   float * float_buffer = internals.float_buffer;
 
   float x = point->position.x;
   float y = point->position.y;
   float z = point->position.z;
+  // RVIZ_RENDERING_LOG_INFO("x = " + Ogre::StringConverter::toString(x) + ", y = " 
+  //  + Ogre::StringConverter::toString(y) + ", z = " + Ogre::StringConverter::toString(z));
+  // RVIZ_RENDERING_LOG_INFO("r = " + Ogre::StringConverter::toString(r)  
+  //   + ", g = " + Ogre::StringConverter::toString(g) 
+  //   + ", b = " + Ogre::StringConverter::toString(b) 
+  //   + ", a = " + Ogre::StringConverter::toString(a));
+  
 
   for (uint32_t j = 0; j < getVerticesPerPoint(); ++j, ++internals.current_vertex_count) {
     *float_buffer++ = x;
@@ -591,20 +633,32 @@ PointCloud::addPointToHardwareBuffer(
     *float_buffer++ = z;
 
     if (!current_mode_supports_geometry_shader_) {
+      // *float_buffer++ = vertices[(j * 3)];
+      // *float_buffer++ = vertices[(j * 3) + 1];
+      // *float_buffer++ = vertices[(j * 3) + 2];
       *float_buffer++ = vertices[(j * 3)];
       *float_buffer++ = vertices[(j * 3) + 1];
-      *float_buffer++ = vertices[(j * 3) + 2];
     }
+    // RVIZ_RENDERING_LOG_INFO("x = " + Ogre::StringConverter::toString(x) 
+    //   + ", y = " + Ogre::StringConverter::toString(y) 
+    //   + ", z = " + Ogre::StringConverter::toString(z)
+    //   + ", u = " + Ogre::StringConverter::toString(vertices[(j * 3)])
+    //   + ", v = " + Ogre::StringConverter::toString(vertices[(j * 3) + 1]));
 
     auto iptr = reinterpret_cast<uint32_t *>(float_buffer);
     *iptr = color;
     ++float_buffer;
+    
+    // *float_buffer++ = r; // 红色分量
+    // *float_buffer++ = g; // 绿色分量
+    // *float_buffer++ = b; // 蓝色分量
+    // *float_buffer++ = a; // 透明度分量
 
-    assert(
-      reinterpret_cast<uint8_t *>(float_buffer) <=
-      reinterpret_cast<uint8_t *>(float_buffer) +
-      internals.rend->getBuffer()->getNumVertices() *
-      internals.rend->getRenderOperation()->vertexData->vertexDeclaration->getVertexSize(0));
+    // assert(
+    //   reinterpret_cast<uint8_t *>(float_buffer) <=
+    //   reinterpret_cast<uint8_t *>(float_buffer) +
+    //   internals.rend->getBuffer()->getNumVertices() *
+    //   internals.rend->getRenderOperation()->vertexData->vertexDeclaration->getVertexSize(0));
   }
   internals.float_buffer = float_buffer;
   return internals;
@@ -692,10 +746,22 @@ void PointCloud::setPickColor(const Ogre::ColourValue & color)
 
   for (auto & renderable : renderables_) {
     renderable->setCustomParameter(RVIZ_RENDERING_PICK_COLOR_PARAMETER, pick_col);
+    // RVIZ_RENDERING_LOG_INFO("pick_color: " + Ogre::StringConverter::toString(pick_color_.r) + ", " + Ogre::StringConverter::toString(pick_color_.g));
   }
+  current_material_->getTechnique(0)->getPass(0)->setDiffuse(pick_color_);
   // TODO(greimela): Add again after clearing up the module dependencies
 //  getUserObjectBindings().setUserAny( "pick_handle", Ogre::Any(
 // selection::colorToHandle( color )));
+  // float x = points_[0].position.x;;
+  // float y = points_[0].position.y;
+  // float z = points_[0].position.z;
+
+  // RVIZ_RENDERING_LOG_INFO("x = " + Ogre::StringConverter::toString(x) + ", y = " + Ogre::StringConverter::toString(y) + ", z = " + Ogre::StringConverter::toString(z));
+  // RVIZ_RENDERING_LOG_INFO("r = " + Ogre::StringConverter::toString(pick_color_.r)  
+  //   + ", g = " + Ogre::StringConverter::toString(pick_color_.g) 
+  //   + ", b = " + Ogre::StringConverter::toString(pick_color_.b) 
+  //   + ", a = " + Ogre::StringConverter::toString(pick_color_.a));
+  // RVIZ_RENDERING_LOG_INFO("point_cloud points: " + Ogre::StringConverter::toString(points_.size()) + " x: " + Ogre::StringConverter::toString(x) + " y: " + Ogre::StringConverter::toString(y) + " z: " + Ogre::StringConverter::toString(z));
 }
 
 PointCloudRenderablePtr PointCloud::createRenderable(

@@ -127,7 +127,6 @@ RenderWindowImpl::render()
   if (!render_system_->getOgreRoot()->renderOneFrame()) {
     RVIZ_RENDERING_LOG_WARNING("in RenderSystemImpl::render() - renderOneFrame() returned false");
   }
-  RVIZ_RENDERING_LOG_ERROR("in RenderSystemImpl::render");
 }
 
 void
@@ -171,7 +170,6 @@ RenderWindowImpl::renderNow()
   if (animating_) {
     this->renderLater();
   }
-  RVIZ_RENDERING_LOG_ERROR("in RenderSystemImpl::renderNow");
 }
 
 void
@@ -207,10 +205,10 @@ RenderWindowImpl::initialize()
 {
   render_system_ = RenderSystem::get();
   double pixel_ratio = parent_->devicePixelRatio();
-  // ogre_render_window_ = render_system_->makeRenderWindow(
-  //   parent_->winId(), parent_->width(), parent_->height(), pixel_ratio);
   ogre_render_window_ = render_system_->makeRenderWindow(
-    parent_->winId(), 525, 742, pixel_ratio);
+    parent_->winId(), parent_->width(), parent_->height(), pixel_ratio);
+  // ogre_render_window_ = render_system_->makeRenderWindow(
+  //   parent_->winId(), 525, 742, pixel_ratio);
   RVIZ_RENDERING_LOG_ERROR("in RenderWindowImpl::initialize，winId:" + std::to_string(parent_->winId()));
   RVIZ_RENDERING_LOG_ERROR("in RenderWindowImpl::ogre_render_window_:" + std::to_string(ogre_render_window_->isActive()) + "," + std::to_string(ogre_render_window_->isVisible()));
   Ogre::Root * ogre_root = render_system_->getOgreRoot();
@@ -240,23 +238,17 @@ RenderWindowImpl::initialize()
 
   if (ogre_camera_) {
     ogre_viewport_ = ogre_render_window_->addViewport(ogre_camera_);
-    // auto bg_color = Ogre::ColourValue(0.937254902f, 0.921568627f, 0.905882353f);  // Qt background
-    // auto bg_color = Ogre::ColourValue(0.5f, 0.5f, 0.5f);
+    auto bg_color = Ogre::ColourValue(0.937254902f, 0.921568627f, 0.905882353f);  // Qt background
     ogre_viewport_->setBackgroundColour(bg_color);
-    RVIZ_RENDERING_LOG_ERROR("in RenderWindowImpl::initialize，ogre_viewport_:" + std::to_string(ogre_viewport_->getActualWidth()) + "," + std::to_string(ogre_viewport_->getActualHeight()));
+    RVIZ_RENDERING_LOG_DEBUG("in RenderWindowImpl::initialize，ogre_viewport_:" + std::to_string(ogre_viewport_->getActualWidth()) + "," + std::to_string(ogre_viewport_->getActualHeight()));
 
     ogre_camera_->setAspectRatio(
       Ogre::Real(ogre_render_window_->getWidth()) / Ogre::Real(ogre_render_window_->getHeight()));
     ogre_camera_->setAutoAspectRatio(true);
-     RVIZ_RENDERING_LOG_ERROR("in RenderWindowImpl::initialize，setAspectRatio:" + std::to_string(ogre_render_window_->getWidth()) + "," + std::to_string(ogre_render_window_->getHeight()));
+     RVIZ_RENDERING_LOG_DEBUG("in RenderWindowImpl::initialize，setAspectRatio:" + std::to_string(ogre_render_window_->getWidth()) + "," + std::to_string(ogre_render_window_->getHeight()));
 
     Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
     Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-
-    //  // Link the viewport with the RTSS
-    // Ogre::RTShader::ShaderGenerator *shader_generator = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
-    // shader_generator->addSceneManager(ogre_scene_manager_);
-    // ogre_viewport_->setMaterialScheme(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
   }
 
   if (!pending_listeners_.empty()) {
@@ -276,15 +268,17 @@ RenderWindowImpl::initialize()
       Ogre::RTShader::ShaderGenerator *shader_generator = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
 
       shader_generator->addSceneManager(ogre_scene_manager_);
-      Ogre::RTShader::ShaderGenerator::getSingleton().setTargetLanguage("glsles"); // 或者"glsl"根据你的需要
-      Ogre::RTShader::ShaderGenerator::getSingleton().setShaderCachePath("."); // 设置你的缓存路径
+      // Ogre::RTShader::ShaderGenerator::getSingleton().setTargetLanguage("glsles"); // 或者"glsl"根据你的需要
+      // Ogre::RTShader::ShaderGenerator::getSingleton().setShaderCachePath("."); // 设置你的缓存路径
 
       ogre_viewport_->setMaterialScheme(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+      // Ogre::MaterialManager::getSingleton().setActiveScheme(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+
 
       // Enable and configure RTSS render state
-      Ogre::RTShader::RenderState* render_state = shader_generator->getRenderState(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
-      render_state->reset(); // 重置渲染状态以应用新的配置
-      shader_generator->invalidateScheme(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME); // 使旧的方案失效
+      // Ogre::RTShader::RenderState* render_state = shader_generator->getRenderState(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+      // render_state->reset(); // 重置渲染状态以应用新的配置
+      // shader_generator->invalidateScheme(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME); // 使旧的方案失效
     }
 }
 
@@ -300,9 +294,7 @@ RenderWindowImpl::resize(size_t width, size_t height)
     ogre_render_window_->windowMovedOrResized();
   }
   this->renderLater();
-  auto bg_color = Ogre::ColourValue(0.5f, 0.5f, 0.5f);
-  setBackgroundColor(bg_color);
-  RVIZ_RENDERING_LOG_ERROR("RenderWindowImpl::resize:" + std::to_string(width) + "," + std::to_string(height));
+  RVIZ_RENDERING_LOG_DEBUG("RenderWindowImpl::resize:" + std::to_string(width) + "," + std::to_string(height));
 }
 
 #if 0
@@ -486,7 +478,6 @@ void RenderWindowImpl::setVisibilityMask(uint32_t mask)
   } else {
     pending_visibility_masks_.emplace_back(mask);
   }
-  RVIZ_RENDERING_LOG_ERROR("RenderWindowImpl::setVisibilityMask");
 }
 
 
@@ -504,10 +495,7 @@ void RenderWindowImpl::setOverlaysEnabled(bool overlays_enabled)
 void RenderWindowImpl::setBackgroundColor(Ogre::ColourValue background_color)
 {
   background_color_ = background_color;
-  // ogre_viewport_->setBackgroundColour(background_color);
-  auto bg_color = Ogre::ColourValue(0.5f, 0.5f, 0.5f);
-  ogre_viewport_->setBackgroundColour(bg_color);
-  RVIZ_RENDERING_LOG_ERROR("RenderWindowImpl::setBackgroundColor");
+  ogre_viewport_->setBackgroundColour(background_color);
 #if 0
   if (ogre_right_viewport_) {
     ogre_right_viewport_->setBackgroundColour(background_color);
@@ -535,7 +523,6 @@ void RenderWindowImpl::setCameraAspectRatio()
       ogre_camera_->setCustomProjectionMatrix(true, proj);
     }
   }
-  RVIZ_RENDERING_LOG_ERROR("RenderWindowImpl::setCameraAspectRatio");
 }
 
 #if 0

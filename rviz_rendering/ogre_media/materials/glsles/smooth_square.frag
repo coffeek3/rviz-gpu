@@ -1,5 +1,6 @@
 #version 100
-precision mediump float;  // 定义浮点精度
+precision mediump int;
+precision mediump float;
 
 // rasterizes a smooth square with ax, ay in [-0.5..0.5]
 
@@ -26,4 +27,5 @@ void main()
     col = col + col * highlight.xyz;
 
     gl_FragColor = vec4(col.r, col.g, col.b, alpha * v_color.a);
+    // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }

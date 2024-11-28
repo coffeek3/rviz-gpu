@@ -38,6 +38,7 @@
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
 #include <OgreSharedPtr.h>
+#include <OgreTechnique.h>
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -159,6 +160,17 @@ void MarkerBase::extractMaterials(Ogre::Entity * entity, S_MaterialPtr & materia
   for (uint64_t i = 0; i < num_sub_entities; ++i) {
     Ogre::SubEntity * sub = entity->getSubEntity(i);
     Ogre::MaterialPtr material = sub->getMaterial();
+
+  //   auto techniques = material->getTechniques();
+  //   for (size_t i = 0; i < techniques.size(); i++)
+  //   {
+  //     Ogre::Technique* technique = techniques[i];
+  //     Ogre::Technique::Passes passes = technique->getPasses();
+  //     for (size_t j = 0; j < passes.size(); j++)
+  //     {
+  //       Ogre::Pass* pass = passes[j];
+  //       pass->setVertexColourTracking(Ogre::TVC_DIFFUSE);
+  //     }
     materials.insert(material);
   }
 }

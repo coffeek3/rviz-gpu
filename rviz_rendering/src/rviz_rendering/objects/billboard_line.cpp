@@ -67,6 +67,8 @@ BillboardLine::BillboardLine(Ogre::SceneManager * scene_manager, Ogre::SceneNode
   static int count = 0;
   std::string material_name = "BillboardLineMaterial" + std::to_string(count++);
   material_ = MaterialManager::createMaterialWithNoLighting(material_name);
+  // material_->getBestTechnique()->getPass(0)->setDiffuse(color);
+  material_->getTechnique(0)->getPass(0)->setVertexColourTracking(Ogre::TVC_DIFFUSE);
 
   setNumLines(num_lines_);
   setMaxPointsPerLine(max_points_per_line_);
@@ -183,13 +185,14 @@ void BillboardLine::addPoint(const Ogre::Vector3 & point, const Ogre::ColourValu
   incrementChainContainerIfNecessary();
 
   rviz_rendering::MaterialManager::enableAlphaBlending(material_, color.a);
-
+  // material_->getBestTechnique()->getPass(0)->setDiffuse(color);
+  // material_->getTechnique(0)->getPass(0)->setVertexColourTracking(Ogre::TVC_DIFFUSE);
   Ogre::BillboardChain::Element e;
   e.position = point;
   e.width = width_;
   e.colour = color;
   chain_containers_[current_chain_container_]->addChainElement(
-    current_line_ % chains_per_container_, e);
+  current_line_ % chains_per_container_, e);
 }
 
 void BillboardLine::incrementChainContainerIfNecessary()
@@ -233,7 +236,6 @@ void BillboardLine::setColor(float r, float g, float b, float a)
   rviz_rendering::MaterialManager::enableAlphaBlending(material_, a);
 
   color_ = Ogre::ColourValue(r, g, b, a);
-
   changeAllElements(
     [this](Ogre::BillboardChain::Element element) {
       element.colour = color_;
@@ -248,7 +250,7 @@ void BillboardLine::changeAllElements(
     Ogre::BillboardChain * container = chain_containers_[line / chains_per_container_];
     uint32_t chain_index = line % chains_per_container_;
     size_t elements_in_chain = container->getNumChainElements(chain_index);
-
+    // container->setUseVertexColours(true);
     for (uint32_t i = 0; i < elements_in_chain; ++i) {
       Ogre::BillboardChain::Element element = container->getChainElement(chain_index, i);
       Ogre::BillboardChain::Element new_element = change_element(element);

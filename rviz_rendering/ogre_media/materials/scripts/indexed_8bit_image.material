@@ -4,9 +4,12 @@ material rviz/Indexed8BitImage
   {
     pass
     {
-      vertex_program_ref rviz/glsl120/indexed_8bit_image.vert {}
+      vertex_program_ref rviz/glsles/indexed_8bit_image.vert 
+      {
+         param_named_auto u_MVPMatrix worldviewproj_matrix
+      }
 
-      fragment_program_ref rviz/glsl120/indexed_8bit_image.frag
+      fragment_program_ref rviz/glsles/indexed_8bit_image.frag
       {
         param_named eight_bit_image int 0
         param_named palette int 1
@@ -17,7 +20,7 @@ material rviz/Indexed8BitImage
       }
       texture_unit
       {
-        texture test_20x20.png 1d
+        texture test_20x20.png 2d
       }
     }
   }

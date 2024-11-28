@@ -1,24 +1,22 @@
 #version 100
-precision mediump float;  // 定义浮点精度
+precision mediump int;
+precision mediump float;
 
-// Draws an 8-bit image using RGB values from a 256x1 palette texture.
-
-varying vec2 UV;
-uniform sampler2D eight_bit_image;
-uniform sampler2D palette;  // 改为 sampler2D
-uniform float alpha;
+varying vec2 UV;                     // 从顶点着色器传入的 UV 坐标
+uniform sampler2D eight_bit_image;   // 输入的 8 位图像纹理
+uniform sampler2D palette;           // 256x1 调色板纹理
+uniform float alpha;                 // 透明度控制
 
 void main()
 {
-  // 获取 8 位图像中的亮度值
+  // 从 8 位图像纹理获取亮度值
   float brightness = texture2D(eight_bit_image, UV).x;
-  
-  // The 0.999 multiply is needed because brightness value 255 comes
-  // out of texture2D() as 1.0, which wraps around to 0.0 in the
-  // palette texture.
-    // 在 2D 调色板纹理中查找对应的颜色
-  vec4 color = texture2D(palette, vec2(brightness, 0.5));
 
-  // 应用 alpha 并设置最终颜色
+  // 从 256x1 调色板纹理中查找对应颜色，使用亮度值作为采样坐标
+  vec4 color = texture2D(palette, vec2(brightness, 0.0));
+
+  // 输出最终颜色，结合 alpha 透明度
   gl_FragColor = vec4(color.rgb, color.a * alpha);
+
+  // gl_FragColor = vec4(1.0, 1.0, 0, 1);
 }

@@ -1,14 +1,20 @@
 #version 100
+precision mediump int;
+precision mediump float;
 
-// Draws an 8-bit image using RGB values from a 256x1 palette texture.
-// This vertex shader just passes through the UV texture coordinates.
-// I'm not sure if it is necessary or not.
+attribute vec4 position; // 顶点位置
+attribute vec2 uv0;      // 输入的 UV 坐标
 
-attribute vec4 uv0;
-varying vec2 UV;
+uniform mat4 u_MVPMatrix; // 模型-视图-投影矩阵
+
+varying vec2 UV; // 传递给片段着色器的 UV 坐标
 
 void main()
 {
-  //gl_Position = ftransform();
-  //UV = vec2(uv0);
+  // 应用 MVP 矩阵进行变换
+  gl_Position = u_MVPMatrix * position;
+  // gl_Position = position;
+
+  // 传递 UV 坐标到片段着色器
+  UV = uv0;
 }

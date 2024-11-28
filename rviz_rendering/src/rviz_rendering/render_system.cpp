@@ -72,14 +72,20 @@ std::mutex RenderSystem::obj_mutex_;
 int RenderSystem::force_gl_version_ = 0;
 bool RenderSystem::force_no_stereo_ = false;
 
-static EGLint const attribute_list[] = {
-        EGL_DEPTH_SIZE, 16,
-        // EGL_STENCIL_SIZE, 8,
-        EGL_NONE
+static const EGLint attribute_list[] = {
+    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT, // 使用 OpenGL ES 3.x
+    EGL_SURFACE_TYPE, EGL_WINDOW_BIT,       // 窗口表面
+    EGL_RED_SIZE, 8,                        // 红色通道精度
+    EGL_GREEN_SIZE, 8,                      // 绿色通道精度
+    EGL_BLUE_SIZE, 8,                       // 蓝色通道精度
+    EGL_ALPHA_SIZE, 8,                      // Alpha 通道精度
+    EGL_DEPTH_SIZE, 24,                     // 深度缓冲
+    EGL_STENCIL_SIZE, 8,                    // 模板缓冲
+    EGL_NONE                                // 结束标记
 };
 
 static EGLint const context_attribs[] = {
-    EGL_CONTEXT_CLIENT_VERSION, 2,
+    EGL_CONTEXT_CLIENT_VERSION, 3,
     EGL_NONE
 };
 
@@ -100,6 +106,7 @@ RenderSystem::get()
     obj_mutex_.lock();
     RVIZ_RENDERING_LOG_INFO_STREAM("RenderSystem, in lock get instance_=" << instance_);
 
+    rviz_rendering::OgreLogging::useLogFileAndStandardOut();
     rviz_rendering::OgreLogging::configureLogging();
     instance_ = new RenderSystem();
 
@@ -177,50 +184,13 @@ RenderSystem::RenderSystem()
   makeRenderWindow(dummy_window_id_, 1, 1);
   detectGlVersion();
   setupResources();
-  Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-}
-
-void
-RenderSystem::initSetup()
-{
-  RVIZ_RENDERING_LOG_INFO("RenderSystem initSetup");
-
-  RVIZ_RENDERING_LOG_INFO("RenderSystem setResourceDirectory");
-  setResourceDirectory();
-
-  RVIZ_RENDERING_LOG_INFO("RenderSystem setPluginDirectory");
-  setPluginDirectory();
-
-  RVIZ_RENDERING_LOG_INFO("RenderSystem initApp");
-  // do not forget to call the base first
-  // OgreBites::ApplicationContext::initApp();
-
-  // RVIZ_RENDERING_LOG_INFO("RenderSystem addInputListener");
-  // OgreBites::ApplicationContext::addInputListener(this);
-
-  // RVIZ_RENDERING_LOG_INFO("RenderSystem getRoot");
-  // ogre_root_ = OgreBites::ApplicationContext::getRoot();
-
-  RVIZ_RENDERING_LOG_INFO("RenderSystem loadOgrePlugins");
-  loadOgrePlugins();
-
-  RVIZ_RENDERING_LOG_INFO("RenderSystem setupRenderSystem");
-  setupRenderSystem();
-
-  RVIZ_RENDERING_LOG_INFO("RenderSystem detectGlVersion");
-  detectGlVersion();
-
-  RVIZ_RENDERING_LOG_INFO("RenderSystem setupResources");
-  setupResources();
-
-  RVIZ_RENDERING_LOG_INFO("RenderSystem initialiseAllResourceGroups");
-  Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+  // Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 }
 
 void
 RenderSystem::prepareOverlays(Ogre::SceneManager * scene_manager)
 {
-  RVIZ_RENDERING_LOG_ERROR("RenderSystem::prepareOverlays, shouldn't run to here!");
+  // RVIZ_RENDERING_LOG_ERROR("RenderSystem::prepareOverlays, shouldn't run to here!");
 // #if ((OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 9) || OGRE_VERSION_MAJOR >= 2)
 //   if (ogre_overlay_system_) {
 //     scene_manager->addRenderQueueListener(ogre_overlay_system_);
@@ -440,7 +410,7 @@ RenderSystem::setupRenderSystem()
   }
   RVIZ_RENDERING_LOG_INFO_STREAM(renderers_msg.substr(0, renderers_msg.length() - 1));
   std::vector<std::string> preferred_renderer_list = {
-    "OpenGL ES",
+    // "OpenGL ES 3.x",
     "OpenGL ES 2.x",
   };
   for (auto renderer_token : preferred_renderer_list) {
@@ -608,6 +578,10 @@ RenderSystem::makeRenderWindow(
   double pixel_ratio)
 {
   static int window_counter = 0;  // Every RenderWindow needs a unique name, oy.
+  
+  if (window != nullptr) {
+    return window;
+  }
 
   Ogre::NameValuePairList params;
   Ogre::RenderWindow * window = nullptr;
@@ -649,36 +623,38 @@ RenderSystem::makeRenderWindow(
   stream << "OgreWindow(" << window_counter++ << ")";
 
 
-  // don't bother trying stereo if Ogre does not support it.
-#if !OGRE_STEREO_ENABLE
-  force_no_stereo_ = true;
-#endif
+//   // don't bother trying stereo if Ogre does not support it.
+// #if !OGRE_STEREO_ENABLE
+//   force_no_stereo_ = true;
+// #endif
+//   force_no_stereo_ = true;
 
-  // attempt to create a stereo window
-  bool is_stereo = false;
-  if (!force_no_stereo_) {
-    params["stereoMode"] = "Frame Sequential";
-    window = tryMakeRenderWindow(stream.str(), width, height, &params, 100);
-    params.erase("stereoMode");
+//   // attempt to create a stereo window
+//   bool is_stereo = false;
+//   if (!force_no_stereo_) {
+//     params["stereoMode"] = "Frame Sequential";
+//     window = tryMakeRenderWindow(stream.str(), width, height, &params, 100);
+//     params.erase("stereoMode");
 
-    if (window) {
-#if OGRE_STEREO_ENABLE
-      is_stereo = window->isStereoEnabled();
-#endif
-      if (!is_stereo) {
-        // Created a non-stereo window.  Discard it and try again (below)
-        // without the stereo parameter.
-        ogre_root_->detachRenderTarget(window);
-        window->destroy();
-        window = nullptr;
-        stream << "x";
-        is_stereo = false;
-      }
-    }
-  }
+//     if (window) {
+// #if OGRE_STEREO_ENABLE
+//       is_stereo = window->isStereoEnabled();
+// #endif
+//       if (!is_stereo) {
+//         // Created a non-stereo window.  Discard it and try again (below)
+//         // without the stereo parameter.
+//         ogre_root_->detachRenderTarget(window);
+//         window->destroy();
+//         window = nullptr;
+//         stream << "x";
+//         is_stereo = false;
+//       }
+//     }
+//   }
 
   if (window == nullptr) {
     window = tryMakeRenderWindow(stream.str(), width, height, &params, 100);
+    Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
   }
 
   if (window == nullptr) {
@@ -694,10 +670,10 @@ RenderSystem::makeRenderWindow(
     window->setVisible(true);
   }
 
-  stereo_supported_ = is_stereo;
+  // stereo_supported_ = is_stereo;
 
-  RVIZ_RENDERING_LOG_INFO_STREAM(
-    "Stereo is " << (stereo_supported_ ? "SUPPORTED" : "NOT SUPPORTED"));
+  // RVIZ_RENDERING_LOG_INFO_STREAM(
+  //   "Stereo is " << (stereo_supported_ ? "SUPPORTED" : "NOT SUPPORTED"));
 
   return window;
 }
@@ -720,7 +696,8 @@ RenderSystem::tryMakeRenderWindow(
   while (window == nullptr && attempts++ < max_attempts) {
     try {
       window = ogre_root_->createRenderWindow(name, width, height, false, params);
-
+      RVIZ_RENDERING_LOG_ERROR_STREAM(
+        "rviz::RenderSystem: creating render window ");
       // If the driver bug happened, tell Ogre we are done with that
       // window and then try again.
       if (x_baddrawable_error) {

@@ -79,6 +79,7 @@ Grid::Grid(
 
   std::string grid_material_name = grid_name + "Material";
   material_ = MaterialManager::createMaterialWithNoLighting(grid_material_name);
+  material_->getTechnique(0)->getPass(0)->setVertexColourTracking(Ogre::TVC_DIFFUSE);
 
   setColor(color_);
 }
@@ -116,7 +117,9 @@ void Grid::setColor(const Ogre::ColourValue & color)
 {
   color_ = color;
   rviz_rendering::MaterialManager::enableAlphaBlending(material_, color.a);
+
   create();
+  
 }
 
 void Grid::setStyle(Style style)
@@ -152,10 +155,11 @@ void Grid::createManualGrid() const
 
   const uint32_t number_of_vertices_in_plane = cell_count_ * 4 * (height_count_ + 1);
   manual_object_->estimateVertexCount(number_of_vertices_in_plane + numberOfVerticalLines());
-
+  // material_->getTechnique(0)->getPass(0)->setVertexColourTracking(Ogre::TVC_DIFFUSE);
   manual_object_->begin(
     material_->getName(), Ogre::RenderOperation::OT_LINE_LIST, "rviz_rendering");
   createLines(addLineFunction);
+  manual_object_->colour(color_);
   manual_object_->end();
 }
 
@@ -165,6 +169,7 @@ void Grid::createBillboardGrid() const
     &Grid::addBillboardLine, this, std::placeholders::_1, std::placeholders::_2);
 
   billboard_line_->setColor(color_.r, color_.g, color_.b, color_.a);
+  billboard_line_->getMaterial()->getTechnique(0)->getPass(0)->setVertexColourTracking(Ogre::TVC_DIFFUSE);
   billboard_line_->setLineWidth(line_width_);
   billboard_line_->setMaxPointsPerLine(2);
   const uint32_t number_of_lines_in_plane = (cell_count_ + 1) * 2 * (height_count_ + 1);

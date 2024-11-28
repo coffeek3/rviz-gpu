@@ -1,11 +1,14 @@
 #version 100
-precision mediump float;  // 定义浮点精度
+precision mediump int;
+precision mediump float;
 // Passes on the packed depth value
 
 // includes
 const float minimum_alpha = 1.0 / 255.0;
-uniform float alpha;
-uniform float far_clip_distance;
+// uniform float alpha;
+const float alpha = 1.0;
+const float far_clip_distance = 100.0;
+// uniform float far_clip_distance;
 varying float depth;
 
 vec4 packDepth()
