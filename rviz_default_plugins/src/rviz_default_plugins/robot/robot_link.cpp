@@ -367,11 +367,12 @@ void RobotLink::setTransforms(
 
 void RobotLink::setToErrorMaterial()
 {
+  // rviz_rendering::MaterialManager::createDefaultMaterials();
   for (auto & visual_mesh : visual_meshes_) {
-    visual_mesh->setMaterialName("BaseWhiteNoLighting");
+    visual_mesh->setMaterialName("BaseWhiteNoLighting", "rviz_rendering");
   }
   for (auto & collision_mesh : collision_meshes_) {
-    collision_mesh->setMaterialName("BaseWhiteNoLighting");
+    collision_mesh->setMaterialName("BaseWhiteNoLighting", "rviz_rendering");
   }
 }
 
@@ -646,7 +647,7 @@ void rtssMaterialClone(const Ogre::MaterialPtr clonedMaterial) {
 
   if (success) {
       clonedMaterial->getTechnique(0)->getPass(0)->setLightingEnabled(true);
-      Ogre::LogManager::getSingleton().logMessage("Successfully created RTSS technique for cloned material.");
+      // Ogre::LogManager::getSingleton().logMessage("Successfully created RTSS technique for cloned material.");
   } else {
       Ogre::LogManager::getSingleton().logMessage("Failed to create RTSS technique for cloned material.");
   }

@@ -114,10 +114,10 @@ void PointCloudRenderable::specifyBufferContent(bool use_tex_coords)
   offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
 
   if (use_tex_coords) {
-    // declaration->addElement(0, offset, Ogre::VET_FLOAT3, Ogre::VES_TEXTURE_COORDINATES, 0);
-    // offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
-    declaration->addElement(0, offset, Ogre::VET_FLOAT2, Ogre::VES_TEXTURE_COORDINATES, 0);
-    offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT2);
+    declaration->addElement(0, offset, Ogre::VET_FLOAT3, Ogre::VES_TEXTURE_COORDINATES, 0);
+    offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
+    // declaration->addElement(0, offset, Ogre::VET_FLOAT2, Ogre::VES_TEXTURE_COORDINATES, 0);
+    // offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT2);
     // Ogre::LogManager::getSingleton().logMessage("use_tex_coords = " + Ogre::StringConverter::toString(use_tex_coords));
   }
 

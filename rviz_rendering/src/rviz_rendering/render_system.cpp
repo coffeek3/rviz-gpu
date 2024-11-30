@@ -181,10 +181,11 @@ RenderSystem::RenderSystem()
   loadOgrePlugins();
   setupRenderSystem();
   ogre_root_->initialise(false);
-  makeRenderWindow(dummy_window_id_, 1, 1);
+  // makeRenderWindow(dummy_window_id_, 1, 1);
   detectGlVersion();
   setupResources();
   // Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+  
 }
 
 void
@@ -352,6 +353,7 @@ RenderSystem::loadOgrePlugins()
 void
 RenderSystem::detectGlVersion()
 {
+  force_gl_version_ = 320;
   if (force_gl_version_) {
     gl_version_ = force_gl_version_;
   } else {
@@ -655,6 +657,7 @@ RenderSystem::makeRenderWindow(
   if (window == nullptr) {
     window = tryMakeRenderWindow(stream.str(), width, height, &params, 100);
     Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+    // MaterialManager::createDefaultMaterials();
   }
 
   if (window == nullptr) {

@@ -633,11 +633,11 @@ PointCloud::addPointToHardwareBuffer(
     *float_buffer++ = z;
 
     if (!current_mode_supports_geometry_shader_) {
-      // *float_buffer++ = vertices[(j * 3)];
-      // *float_buffer++ = vertices[(j * 3) + 1];
-      // *float_buffer++ = vertices[(j * 3) + 2];
       *float_buffer++ = vertices[(j * 3)];
       *float_buffer++ = vertices[(j * 3) + 1];
+      *float_buffer++ = vertices[(j * 3) + 2];
+      // *float_buffer++ = vertices[(j * 3)];
+      // *float_buffer++ = vertices[(j * 3) + 1];
     }
     // RVIZ_RENDERING_LOG_INFO("x = " + Ogre::StringConverter::toString(x) 
     //   + ", y = " + Ogre::StringConverter::toString(y) 

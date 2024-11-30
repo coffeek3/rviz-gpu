@@ -227,7 +227,8 @@ VisualizationManager::VisualizationManager(
   global_status_ = new StatusList("Global Status", root_display_group_);
   global_status_->setReadOnly(true);
 
-  rviz_rendering::MaterialManager::createDefaultColorMaterials();
+  // rviz_rendering::MaterialManager::createDefaultColorMaterials();
+  // rviz_rendering::MaterialManager::createDefaultMaterials();
 
   handler_manager_ = std::make_shared<HandlerManager>();
   selection_manager_ = std::make_shared<SelectionManager>(this);

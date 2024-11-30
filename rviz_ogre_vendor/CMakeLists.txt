@@ -155,7 +155,7 @@ macro(build_ogre)
   include(ExternalProject)
   ExternalProject_Add(ogre-v1.12.1
     URL file:///work/ogre-1.12.1.zip
-    URL_MD5 8d8abc9ac9ced1d98cb956f451f4e31d
+    URL_MD5 7d5d7a9ea43f45420c240062690f394f
     TIMEOUT 1200
     LOG_CONFIGURE ${should_log}
     LOG_BUILD ${should_log}
@@ -188,7 +188,7 @@ macro(build_ogre)
       -DOGRE_BUILD_RENDERSYSTEM_GL3PLUS:BOOL=FALSE 
       -DEGL_FOUND:BOOL=TRUE 
       -DOGRE_GLSUPPORT_USE_EGL:BOOL=TRUE
-      -DRTSHADER_SYSTEM_BUILD_CORE_SHADERS:BOOL=FALSE
+      -DRTSHADER_SYSTEM_BUILD_CORE_SHADERS:BOOL=TRUE
       -DOGRE_BUILD_COMPONENT_RTSHADERSYSTEM:BOOL=TRUE 
       -DCMAKE_BUILD_TYPE=Debug
       -Wno-dev

@@ -54,6 +54,19 @@ void MaterialManager::createColorMaterial(
   }
   mat->setLightingEnabled(true);
   mat->setReceiveShadows(false);
+
+  Ogre::RTShader::ShaderGenerator* shaderGen = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+  bool success = shaderGen->createShaderBasedTechnique(
+      *mat, 
+      Ogre::MaterialManager::DEFAULT_SCHEME_NAME, 
+      Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+  // 创建一个基于FFP状态的技术
+  if (success) {
+      mat->getTechnique(0)->setLightingEnabled(false);
+      Ogre::LogManager::getSingleton().logMessage("success to create shader-based technique for material: " + name);
+  } else {
+      Ogre::LogManager::getSingleton().logMessage("fail to create shader-based technique for material: " + name);
+  }
 }
 
 void MaterialManager::createDefaultColorMaterials()
@@ -170,20 +183,35 @@ void MaterialManager::enableAlphaBlending(
 
 void MaterialManager::createDefaultMaterials()
 {
-  auto material = Ogre::MaterialManager::getSingleton().create(
-    "BaseWhiteNoLighting", "rviz_rendering");
-  material->setLightingEnabled(false);
+
+
+  Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create("BaseWhiteNoLighting", "rviz_rendering");
   Ogre::RTShader::ShaderGenerator* shaderGen = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
-    
+          
   bool success = shaderGen->createShaderBasedTechnique(
-    *material, 
+      *material, 
       Ogre::MaterialManager::DEFAULT_SCHEME_NAME, 
       Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
   // 创建一个基于FFP状态的技术
   if (success) {
+      material->getTechnique(0)->setLightingEnabled(false);
       Ogre::LogManager::getSingleton().logMessage("success to create shader-based technique for material: BaseWhiteNoLighting");
   } else {
       Ogre::LogManager::getSingleton().logMessage("fail to create shader-based technique for material: BaseWhiteNoLighting");
+  }
+
+  Ogre::MaterialPtr base_white_material = Ogre::MaterialManager::getSingleton().create("BaseWhite","rviz_rendering");
+          
+  success = shaderGen->createShaderBasedTechnique(
+      *base_white_material, 
+      Ogre::MaterialManager::DEFAULT_SCHEME_NAME, 
+      Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
+  // 创建一个基于FFP状态的技术
+  if (success) {
+      material->getTechnique(0)->setLightingEnabled(true);
+      Ogre::LogManager::getSingleton().logMessage("success to create shader-based technique for material: BaseWhite");
+  } else {
+      Ogre::LogManager::getSingleton().logMessage("fail to create shader-based technique for material: BaseWhite");
   }
 
 }

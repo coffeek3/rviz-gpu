@@ -29,6 +29,7 @@
  */
 
 #include "./ogre_render_window_impl.hpp"
+#include "rviz_rendering/material_manager.hpp"
 
 #include <cstdlib>
 #include <functional>
@@ -279,6 +280,8 @@ RenderWindowImpl::initialize()
       // Ogre::RTShader::RenderState* render_state = shader_generator->getRenderState(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
       // render_state->reset(); // 重置渲染状态以应用新的配置
       // shader_generator->invalidateScheme(Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME); // 使旧的方案失效
+      MaterialManager::createDefaultMaterials();
+      MaterialManager::createDefaultColorMaterials();
     }
 }
 
